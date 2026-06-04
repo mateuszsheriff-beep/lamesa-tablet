@@ -1,6 +1,6 @@
-// CONFIG_SUPABASE: Podmień poniższe dane na swoje!
-const SUPABASE_URL = "https://TWÓJ_PROJEKT.supabase.co";
-const SUPABASE_ANON_KEY = "TWÓJ_ANON_KEY";
+// CONFIG_SUPABASE: Podmień poniższe dane na swoje z panelu Supabase!
+const SUPABASE_URL = "https://azficflfpvvntuufjfne.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6ZmljZmxmcHZ2bnR1dWZqZm5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NzY5ODAsImV4cCI6MjA5NjE1Mjk4MH0.1YFCrNluP7IgnlXy8JUgftBiRS6XqQ8LUZP9u389p-c";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -117,7 +117,7 @@ function loginSuccess() {
     fetchReceipts();
 }
 
-// System Wniosków o Konto (Rejestracja)
+// System Wniosków o Konto (Rejestracja) - Wersja z dokładnym logowaniem błędów
 function setupRegistration() {
     const regForm = document.getElementById("register-form");
     const regBtn = document.getElementById("register-btn");
@@ -137,13 +137,17 @@ function setupRegistration() {
                 { badge: badge, password: pass, fullname: name, discord: discord, is_approved: false }
             ]);
 
-            if (error) throw error;
+            if (error) {
+                throw error; // Wyrzucamy błąd prosto do catcha, by go odczytać
+            }
+            
             alert("Wniosek o dostęp wysłany! Poczekaj, aż Zarząd zaakceptuje Twoje konto.");
             document.getElementById("show-login-btn").click(); // Powrót do logowania
             regForm.reset();
         } catch (err) {
-            alert("Błąd podczas wysyłania wniosku. Sprawdź konsolę.");
-            console.error(err);
+            // Dokładna treść błędu
+            alert("Odwołany wniosek (Błąd Supabase): \n" + (err.message || "Nieznany błąd połączenia z bazą. Sprawdź polityki RLS w Supabase."));
+            console.error("Szczegóły błędu:", err);
         } finally {
             regBtn.innerText = "Wyślij wniosek do zarządu";
             regBtn.disabled = false;
@@ -190,7 +194,7 @@ function setupReceipts() {
             form.reset();
             fetchReceipts(); // Odśwież listę po dodaniu
         } catch (err) {
-            alert("Błąd!");
+            alert("Błąd podczas wystawiania paragonu!");
             console.error(err);
         } finally {
             btn.disabled = false;
