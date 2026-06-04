@@ -1,11 +1,11 @@
 // CONFIG_SUPABASE: Podmień poniższe dane na swoje dane z panelu Supabase (Project Settings -> API)
-const SUPABASE_URL = "https://TWÓJ_PROJEKT.supabase.co";
-const SUPABASE_ANON_KEY = "TWÓJ_ANON_KEY_Z_SUPABASE";
+const SUPABASE_URL = "https://azficflfpvvntuufjfne.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6ZmljZmxmcHZ2bnR1dWZqZm5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NzY5ODAsImV4cCI6MjA5NjE1Mjk4MH0.1YFCrNluP7IgnlXy8JUgftBiRS6XqQ8LUZP9u389p-c";
 
-// Inicjalizacja klienta Supabase
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Inicjalizacja klienta Supabase (ZMIENIONA NAZWA ZMIENNEJ NA supabaseClient, aby uniknąć błędu!)
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Dane zalogowanego członka zarządu (Zostaną wczytane po pomyślnym zalogowaniu)
+// Dane zalogowanego członka zarządu
 let CurrentUser = {
     fullname: "Zarząd La Mesa",
     badge: "001",
@@ -33,7 +33,7 @@ function setupLoginSystem() {
         const idInput = document.getElementById("login-id").value;
         const passInput = document.getElementById("login-pass").value;
 
-        // Sprawdzanie danych logowania podanych przez Ciebie
+        // Sprawdzanie danych logowania: ID 001 oraz hasło zarzad
         if (idInput === "001" && passInput === "zarzad") {
             // Sukces - schowaj logowanie, pokaż aplikację
             loginScreen.classList.add("hidden");
@@ -131,7 +131,7 @@ function setupFormListener() {
         submitBtn.disabled = true;
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('cartel_requests')
                 .insert([
                     { 
@@ -151,7 +151,7 @@ function setupFormListener() {
 
         } catch (error) {
             console.error("Błąd podczas wysyłania do Supabase:", error.message);
-            alert("Wystąpił błąd systemu podczas wysyłania. Sprawdź konsolę (F12) lub połączenie Supabase.");
+            alert("Wystąpił błąd systemu podczas wysyłania. Upewnij się, że poprawnie wpisałeś klucze Supabase na górze pliku app.js!");
         } finally {
             // Przywrócenie przycisku
             submitBtn.innerText = "Wyślij wniosek do zarządu";
