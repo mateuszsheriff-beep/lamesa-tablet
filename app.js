@@ -65,7 +65,8 @@ function setupLogin() {
                 .single();
 
             if (error || !data) {
-                alert("Błędny ID lub Hasło!");
+                alert("Błędny ID lub Hasło! Albo baza uważa, że takie konto nie istnieje.");
+                console.error("Błąd logowania DB:", error);
                 return;
             }
 
@@ -79,7 +80,7 @@ function setupLogin() {
             loginSuccess();
 
         } catch (error) {
-            console.error(error);
+            console.error("Wystąpił nieoczekiwany błąd przy logowaniu:", error);
         } finally {
             loginBtn.innerText = "Autoryzuj dostęp";
             loginBtn.disabled = false;
@@ -117,7 +118,7 @@ function loginSuccess() {
     fetchReceipts();
 }
 
-// System Wniosków o Konto (Rejestracja) - Wersja z dokładnym logowaniem błędów
+// System Wniosków o Konto (Rejestracja)
 function setupRegistration() {
     const regForm = document.getElementById("register-form");
     const regBtn = document.getElementById("register-btn");
@@ -133,8 +134,9 @@ function setupRegistration() {
         const pass = document.getElementById("reg-pass").value;
 
         try {
+            // Dodano domyślną rangę "Rekrut" w razie gdyby baza wymagała uzupełnienia tej kolumny.
             const { error } = await supabaseClient.from('cartel_users').insert([
-                { badge: badge, password: pass, fullname: name, discord: discord, is_approved: false }
+                { badge: badge, password: pass, fullname: name, discord: discord, is_approved: false, rank: "Rekrut" }
             ]);
 
             if (error) {
@@ -145,9 +147,8 @@ function setupRegistration() {
             document.getElementById("show-login-btn").click(); // Powrót do logowania
             regForm.reset();
         } catch (err) {
-            // Dokładna treść błędu
-            alert("Odwołany wniosek (Błąd Supabase): \n" + (err.message || "Nieznany błąd połączenia z bazą. Sprawdź polityki RLS w Supabase."));
-            console.error("Szczegóły błędu:", err);
+            alert("Odwołany wniosek (Błąd Supabase): \n" + (err.message || "Sprawdź polityki RLS lub upewnij się, że masz takie kolumny w bazie."));
+            console.error("Szczegóły błędu rejestracji:", err);
         } finally {
             regBtn.innerText = "Wyślij wniosek do zarządu";
             regBtn.disabled = false;
@@ -182,20 +183,22 @@ function setupReceipts() {
         btn.innerText = "Zapisywanie...";
 
         const clientDiscord = document.getElementById("receipt-discord").value;
-        const amount = document.getElementById("receipt-amount").value;
+        const products = document.getElementById("receipt-products").value; // Zbieranie kupionych produktów z HTML
+        const amount = parseInt(document.getElementById("receipt-amount").value, 10); // Przymusowy konwert na liczbę (int4)
 
         try {
             const { error } = await supabaseClient.from('cartel_paragony').insert([
-                { seller_name: CurrentUser.fullname, client_discord: clientDiscord, amount: amount }
+                { seller_name: CurrentUser.fullname, client_discord: clientDiscord, products: products, amount: amount }
             ]);
 
             if (error) throw error;
+            
             alert("Paragon wystawiony pomyślnie!");
             form.reset();
             fetchReceipts(); // Odśwież listę po dodaniu
         } catch (err) {
-            alert("Błąd podczas wystawiania paragonu!");
-            console.error(err);
+            alert("Błąd podczas wystawiania paragonu:\n" + err.message);
+            console.error("Błąd zapisu paragonu:", err);
         } finally {
             btn.disabled = false;
             btn.innerText = "Zapisz w księgach";
@@ -203,9 +206,10 @@ function setupReceipts() {
     });
 }
 
-async function fetchReceipts() {
+// Odczytywanie i rysowanie Paragonów z Bazy
+window.fetchReceipts = async function() {
     const list = document.getElementById("receipts-list");
-    list.innerHTML = "<p class='text-sm text-gray-500 text-center'>Pobieranie...</p>";
+    list.innerHTML = "<p class='text-sm text-gray-500 text-center p-4'>Pobieranie...</p>";
 
     const { data, error } = await supabaseClient
         .from('cartel_paragony')
@@ -213,8 +217,13 @@ async function fetchReceipts() {
         .order('created_at', { ascending: false })
         .limit(20);
 
-    if (error || !data.length) {
-        list.innerHTML = "<p class='text-sm text-gray-500 text-center p-2'>Brak zapisanych transakcji.</p>";
+    if (error) {
+        list.innerHTML = `<p class='text-sm text-red-500 text-center p-2'>Błąd ładowania: ${error.message}</p>`;
+        return;
+    }
+
+    if (!data || !data.length) {
+        list.innerHTML = "<p class='text-sm text-gray-500 text-center p-4'>Brak zapisanych transakcji.</p>";
         return;
     }
 
@@ -225,6 +234,7 @@ async function fetchReceipts() {
         div.innerHTML = `
             <div>
                 <span class="text-sm font-bold text-gray-200">${receipt.client_discord}</span>
+                <span class="text-xs text-amber-500 block">Towar: ${receipt.products || 'Brak danych'}</span>
                 <span class="text-xs text-gray-500 block">Sprzedał: ${receipt.seller_name}</span>
             </div>
             <div class="text-amber-500 font-mono font-bold">$${receipt.amount}</div>
@@ -234,7 +244,7 @@ async function fetchReceipts() {
 }
 
 // Panel Zarządu - Pobieranie i akceptowanie kont
-async function fetchPendingUsers() {
+window.fetchPendingUsers = async function() {
     const list = document.getElementById("pending-users-list");
     list.innerHTML = "<p class='text-sm text-gray-500'>Szukam wniosków...</p>";
 
@@ -243,7 +253,12 @@ async function fetchPendingUsers() {
         .select('*')
         .eq('is_approved', false);
 
-    if (error || !data.length) {
+    if (error) {
+        list.innerHTML = `<p class='text-sm text-red-500'>Błąd bazy danych: ${error.message}</p>`;
+        return;
+    }
+
+    if (!data || !data.length) {
         list.innerHTML = "<p class='text-sm text-gray-500'>Brak oczekujących kont do akceptacji.</p>";
         return;
     }
@@ -266,7 +281,7 @@ async function fetchPendingUsers() {
     });
 }
 
-// Funkcje zarządu: Akceptuj / Odrzuć (Dostępne globalnie przez window.)
+// Funkcje zarządu: Akceptuj / Odrzuć
 window.approveUser = async function(userId) {
     if(!confirm("Na pewno chcesz zaakceptować to konto? Gracz będzie mógł się zalogować.")) return;
     await supabaseClient.from('cartel_users').update({ is_approved: true }).eq('id', userId);
