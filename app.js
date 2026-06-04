@@ -5,19 +5,103 @@ const SUPABASE_ANON_KEY = "TWÓJ_ANON_KEY_Z_SUPABASE";
 // Inicjalizacja klienta Supabase
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Przykładowe dane zalogowanego członka kartelu (możesz potem zastąpić to pobieraniem z bazy)
-const CurrentUser = {
-    fullname: "Jan Bukowski",
-    badge: "353133",
-    rank: "Sicario (Starszy żołnierz)",
-    discord: "sheriff13_"
+// Dane zalogowanego członka zarządu (Zostaną wczytane po pomyślnym zalogowaniu)
+let CurrentUser = {
+    fullname: "Zarząd La Mesa",
+    badge: "001",
+    rank: "El Patron (Szef)",
+    discord: "boss_lamesa"
 };
 
 // Funkcja wykonująca się po załadowaniu strony
 document.addEventListener("DOMContentLoaded", () => {
-    loadUserProfile();
+    setupLoginSystem();
+    setupNavigation();
     setupFormListener();
 });
+
+// Obsługa systemu logowania
+function setupLoginSystem() {
+    const loginForm = document.getElementById("login-form");
+    const loginScreen = document.getElementById("login-screen");
+    const mainApp = document.getElementById("main-app");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        const idInput = document.getElementById("login-id").value;
+        const passInput = document.getElementById("login-pass").value;
+
+        // Sprawdzanie danych logowania podanych przez Ciebie
+        if (idInput === "001" && passInput === "zarzad") {
+            // Sukces - schowaj logowanie, pokaż aplikację
+            loginScreen.classList.add("hidden");
+            mainApp.classList.remove("hidden");
+            
+            // Załaduj dane do HTML
+            loadUserProfile();
+        } else {
+            alert("Odmowa dostępu! Błędny numer pracownika lub hasło.");
+        }
+    });
+
+    // Przycisk wylogowania w lewym dolnym rogu
+    logoutBtn.addEventListener("click", () => {
+        mainApp.classList.add("hidden");
+        loginScreen.classList.remove("hidden");
+        document.getElementById("login-pass").value = ""; // Czyści hasło po wylogowaniu
+    });
+}
+
+// Obsługa zakładek (Przełączanie przycisków w menu bocznym)
+function setupNavigation() {
+    const navButtons = document.querySelectorAll(".nav-btn");
+    const tabContents = document.querySelectorAll(".tab-content");
+    const pageTitle = document.getElementById("page-title");
+    const pageSubtitle = document.getElementById("page-subtitle");
+
+    navButtons.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            // 1. Zresetuj wygląd wszystkich przycisków menu
+            navButtons.forEach(b => {
+                b.classList.remove("nav-active");
+                b.classList.add("nav-inactive");
+            });
+
+            // 2. Nadaj aktywny wygląd klikniętemu przyciskowi
+            btn.classList.add("nav-active");
+            btn.classList.remove("nav-inactive");
+
+            // 3. Ukryj wszystkie sekcje z zawartością
+            tabContents.forEach(tab => tab.classList.add("hidden"));
+
+            // 4. Pokaż wybraną sekcję
+            const targetTabId = btn.getAttribute("data-tab");
+            document.getElementById(targetTabId).classList.remove("hidden");
+
+            // 5. Zmiana tytułów na górze w zależności od wybranej zakładki
+            if(targetTabId === "tab-panel") {
+                pageTitle.innerText = "Panel Funkcjonariusza Kartelu";
+                pageSubtitle.innerText = "Twój profil, aktywne urlopy oraz składanie wniosków wewnętrznych.";
+            } else if(targetTabId === "tab-magazyn") {
+                pageTitle.innerText = "Magazyn & Zaopatrzenie";
+                pageSubtitle.innerText = "Przeglądaj stan inwentarza i zlecaj dostawy z czarnego rynku.";
+            } else if(targetTabId === "tab-dokumenty") {
+                pageTitle.innerText = "Dokumentacja i Umowy";
+                pageSubtitle.innerText = "Rejestr legalnych biznesów i pralni brudnych pieniędzy.";
+            } else if(targetTabId === "tab-kasa") {
+                pageTitle.innerText = "Rozliczenia & Kasa";
+                pageSubtitle.innerText = "Finansowe zestawienie działań organizacji.";
+            } else if(targetTabId === "tab-kodeks") {
+                pageTitle.innerText = "Kodeks & Cennik";
+                pageSubtitle.innerText = "Zasady obowiązujące na terytorium La Mesa.";
+            }
+        });
+    });
+}
 
 // Wstrzykiwanie danych użytkownika do HTML (Profil Kartelu)
 function loadUserProfile() {
@@ -47,16 +131,6 @@ function setupFormListener() {
         submitBtn.disabled = true;
 
         try {
-            /* Wymagana tabela w Supabase o nazwie: 'cartel_requests'
-               Kolumny w bazie do stworzenia:
-               - id (int8 / uuid, auto-increment)
-               - created_at (timestamp)
-               - user_name (text)
-               - user_badge (text)
-               - request_type (text)
-               - reason (text)
-               - status (text, default: 'Oczekuje')
-            */
             const { data, error } = await supabase
                 .from('cartel_requests')
                 .insert([

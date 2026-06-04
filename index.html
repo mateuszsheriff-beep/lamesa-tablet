@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Mesa Cartel - Panel Pracowniczy</title>
+    <title>La Mesa Cartel - System Zintegrowany</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,142 +13,210 @@
             background-color: #0b0c10;
         }
         /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #11141a; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 3px; }
+        
+        /* Klasy dla aktywnej zakładki w menu */
+        .nav-active {
+            background-color: rgba(245, 158, 11, 0.1); /* bg-amber-500/10 */
+            color: #fbbf24; /* text-amber-400 */
+            border-color: rgba(245, 158, 11, 0.2); /* border-amber-500/20 */
         }
-        ::-webkit-scrollbar-track {
-            background: #11141a;
+        .nav-inactive {
+            color: #9ca3af; /* text-gray-400 */
+            border-color: transparent;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #d4af37;
-            border-radius: 3px;
+        .nav-inactive:hover {
+            background-color: rgba(31, 41, 55, 0.5); /* hover:bg-gray-800/50 */
+            color: #e5e7eb; /* hover:text-gray-200 */
         }
     </style>
 </head>
-<body class="text-gray-200 min-h-screen flex">
+<body class="text-gray-200 min-h-screen">
 
-    <aside class="w-72 bg-[#11141a] border-r border-amber-900/30 flex flex-col justify-between p-6 shrink-0">
-        <div>
-            <div class="flex items-center gap-3 mb-8 pb-4 border-b border-gray-800">
-                <div class="w-10 h-10 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black text-xl shadow-lg shadow-amber-500/20">
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-[#0b0c10] p-4">
+        <div class="bg-[#11141a] border border-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl shadow-black">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black text-2xl shadow-lg shadow-amber-500/20 mx-auto mb-4">
                     LM
                 </div>
+                <h1 class="text-2xl font-bold tracking-wider text-amber-500">LA MESA CARTEL</h1>
+                <p class="text-sm text-gray-500 uppercase tracking-widest mt-1">Zaloguj się do systemu</p>
+            </div>
+
+            <form id="login-form" class="space-y-5">
                 <div>
-                    <h1 class="font-bold text-lg tracking-wider text-amber-500">LA MESA</h1>
-                    <p class="text-xs text-gray-500 uppercase tracking-widest">Cartel System</p>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Numer pracownika (ID)</label>
+                    <input type="text" id="login-id" required placeholder="Np. 001" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-amber-500 font-mono">
                 </div>
-            </div>
-
-            <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 text-center mb-8">
-                <div class="relative w-20 h-20 mx-auto mb-3">
-                    <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" class="rounded-full border-2 border-amber-500 object-cover w-full h-full">
-                    <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-[#161a23]"></div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Hasło dostępu</label>
+                    <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-gray-200">
                 </div>
-                <h2 id="side-user-name" class="font-semibold text-sm">Ładowanie...</h2>
-                <p id="side-user-rank" class="text-xs text-amber-500 font-medium mt-1">...</p>
-            </div>
-
-            <nav class="space-y-2">
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-amber-500/10 text-amber-400 font-medium border border-amber-500/20 transition">
-                    <span>👤</span> Panel Członka
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-                    <span>📦</span> Magazyn & Zaopatrzenie
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-                    <span>📄</span> Dokumentacja / Umowy
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-                    <span>💰</span> Rozliczenia & Brudna Kasa
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800/50 hover:text-gray-200 transition">
-                    <span>⚖️</span> Kodeks / Cennik
-                </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400/70 hover:bg-red-950/20 hover:text-red-400 transition mt-6">
-                    <span>👑</span> Panel Zarządu (Boss)
-                </a>
-            </nav>
+                <button type="submit" class="w-full bg-gradient-to-r from-amber-600 to-amber-500 text-black font-semibold text-sm px-6 py-3 rounded-lg hover:from-amber-500 hover:to-yellow-400 transition shadow-lg shadow-amber-600/10 mt-4 cursor-pointer">
+                    Autoryzuj dostęp
+                </button>
+            </form>
         </div>
+    </div>
 
-        <div class="text-center text-xs text-gray-600 border-t border-gray-800 pt-4">
-            La Mesa Cartel &copy; 2026
-        </div>
-    </aside>
-
-    <main class="flex-1 p-8 overflow-y-auto">
-        
-        <div class="flex justify-between items-center mb-8">
+    <div id="main-app" class="hidden min-h-screen flex">
+        <aside class="w-72 bg-[#11141a] border-r border-amber-900/30 flex flex-col justify-between p-6 shrink-0">
             <div>
-                <h2 class="text-2xl font-bold tracking-tight">Panel Funkcjonariusza Kartelu</h2>
-                <p class="text-sm text-gray-400 mt-1">Twój profil, aktywne urlopy oraz składanie wniosków wewnętrznych.</p>
-            </div>
-            <div id="status-badge" class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs px-3 py-1.5 rounded-full font-medium">
-                Zsynchronizowano z bazą danych
-            </div>
-        </div>
+                <div class="flex items-center gap-3 mb-8 pb-4 border-b border-gray-800">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black text-xl shadow-lg shadow-amber-500/20">
+                        LM
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg tracking-wider text-amber-500">LA MESA</h1>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest">Cartel System</p>
+                    </div>
+                </div>
 
-        <div class="max-w-5xl space-y-6">
+                <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 text-center mb-8">
+                    <div class="relative w-20 h-20 mx-auto mb-3">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Avatar" class="rounded-full border-2 border-amber-500 object-cover w-full h-full">
+                        <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-[#161a23]"></div>
+                    </div>
+                    <h2 id="side-user-name" class="font-semibold text-sm">Ładowanie...</h2>
+                    <p id="side-user-rank" class="text-xs text-amber-500 font-medium mt-1">...</p>
+                </div>
+
+                <nav class="space-y-2" id="sidebar-nav">
+                    <a href="#" data-tab="tab-panel" class="nav-btn nav-active flex items-center gap-3 px-4 py-3 rounded-lg font-medium border transition">
+                        <span>👤</span> Panel Członka
+                    </a>
+                    <a href="#" data-tab="tab-magazyn" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition">
+                        <span>📦</span> Magazyn & Zaopatrzenie
+                    </a>
+                    <a href="#" data-tab="tab-dokumenty" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition">
+                        <span>📄</span> Dokumentacja / Umowy
+                    </a>
+                    <a href="#" data-tab="tab-kasa" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition">
+                        <span>💰</span> Rozliczenia & Brudna Kasa
+                    </a>
+                    <a href="#" data-tab="tab-kodeks" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition">
+                        <span>⚖️</span> Kodeks / Cennik
+                    </a>
+                </nav>
+            </div>
+
+            <div class="text-center text-xs text-gray-600 border-t border-gray-800 pt-4 mt-6">
+                <button id="logout-btn" class="text-red-400 hover:text-red-300 font-semibold mb-2 cursor-pointer w-full text-center">🚪 Wyloguj się</button>
+                <br>La Mesa Cartel &copy; 2026
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
             
-            <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 flex flex-col md:flex-row items-center gap-8">
-                <div class="w-32 h-32 rounded-xl overflow-hidden border border-amber-500/40 shrink-0 shadow-xl shadow-black">
-                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-full h-full object-cover">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 id="page-title" class="text-2xl font-bold tracking-tight">Panel Funkcjonariusza Kartelu</h2>
+                    <p id="page-subtitle" class="text-sm text-gray-400 mt-1">Twój profil, aktywne urlopy oraz składanie wniosków wewnętrznych.</p>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                    <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
-                        <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">Imię i Nazwisko / Pseudonim</span>
-                        <span id="user-fullname" class="text-base font-medium text-gray-200">Ładowanie...</span>
-                    </div>
-                    
-                    <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
-                        <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">Identyfikator (ID)</span>
-                        <span id="user-badge" class="text-base font-mono font-bold text-amber-500">000000</span>
-                    </div>
-
-                    <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
-                        <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">Ranga (Stopień)</span>
-                        <span id="user-rank" class="text-base font-medium text-gray-200">Ładowanie...</span>
-                    </div>
-
-                    <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60 md:col-span-3">
-                        <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">Połączenie Discord</span>
-                        <span id="user-discord" class="text-sm font-mono text-gray-400">brak_danych</span>
-                    </div>
+                <div id="status-badge" class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs px-3 py-1.5 rounded-full font-medium">
+                    Zsynchronizowano z bazą danych
                 </div>
             </div>
 
-            <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6">
-                <h3 class="text-lg font-semibold text-gray-100 mb-2">Wniosek organizacyjny / Urlopowy</h3>
-                <p class="text-xs text-gray-400 mb-6 pb-4 border-b border-gray-800/60">
-                    Maksymalnie 14 dni kalendarzowych w przypadku urlopu. Każde zgłoszenie trafia bezpośrednio do logów zarządu oraz bazy Supabase.
-                </p>
+            <div class="max-w-5xl space-y-6">
+                
+                <div id="tab-panel" class="tab-content block">
+                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 flex flex-col md:flex-row items-center gap-8 mb-6">
+                        <div class="w-32 h-32 rounded-xl overflow-hidden border border-amber-500/40 shrink-0 shadow-xl shadow-black">
+                            <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-full h-full object-cover">
+                        </div>
 
-                <form id="request-form" class="space-y-4">
-                    <div>
-                        <label for="request-type" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Typ wniosku</label>
-                        <select id="request-type" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-gray-200">
-                            <option value="urlop">Wniosek o urlop (Przerwa od obowiązków)</option>
-                            <option value="Zapotrzebowanie">Zapotrzebowanie na sprzęt/broń</option>
-                            <option value="Awans">Wniosek o awans podwładnego</option>
-                            <option value="Inne">Inne (Sprawy organizacyjne)</option>
-                        </select>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
+                                <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">Imię i Nazwisko / Pseudonim</span>
+                                <span id="user-fullname" class="text-base font-medium text-gray-200">Ładowanie...</span>
+                            </div>
+                            
+                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
+                                <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">Identyfikator (ID)</span>
+                                <span id="user-badge" class="text-base font-mono font-bold text-amber-500">000</span>
+                            </div>
+
+                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
+                                <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">Ranga (Stopień)</span>
+                                <span id="user-rank" class="text-base font-medium text-gray-200">Ładowanie...</span>
+                            </div>
+
+                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60 md:col-span-3">
+                                <span class="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">Połączenie Discord</span>
+                                <span id="user-discord" class="text-sm font-mono text-gray-400">brak_danych</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label for="request-reason" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Powód / Uzasadnienie</label>
-                        <textarea id="request-reason" rows="4" required placeholder="Np. sprawy rodzinne, wyjazd z miasta, zapotrzebowanie na dostawę do magazynu..." class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-gray-200 placeholder-gray-600 resize-none"></textarea>
-                    </div>
+                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-gray-100 mb-2">Wniosek organizacyjny / Urlopowy</h3>
+                        <p class="text-xs text-gray-400 mb-6 pb-4 border-b border-gray-800/60">
+                            Maksymalnie 14 dni kalendarzowych w przypadku urlopu. Każde zgłoszenie trafia bezpośrednio do logów zarządu oraz bazy Supabase.
+                        </p>
 
-                    <div class="flex justify-end pt-2">
-                        <button type="submit" id="submit-btn" class="bg-gradient-to-r from-amber-600 to-amber-500 text-black font-semibold text-sm px-6 py-3 rounded-lg hover:from-amber-500 hover:to-yellow-400 transition shadow-lg shadow-amber-600/10 cursor-pointer">
-                            Wyślij wniosek do zarządu
-                        </button>
+                        <form id="request-form" class="space-y-4">
+                            <div>
+                                <label for="request-type" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Typ wniosku</label>
+                                <select id="request-type" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-gray-200">
+                                    <option value="urlop">Wniosek o urlop (Przerwa od obowiązków)</option>
+                                    <option value="Zapotrzebowanie">Zapotrzebowanie na sprzęt/broń</option>
+                                    <option value="Awans">Wniosek o awans podwładnego</option>
+                                    <option value="Inne">Inne (Sprawy organizacyjne)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="request-reason" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Powód / Uzasadnienie</label>
+                                <textarea id="request-reason" rows="4" required placeholder="Np. sprawy rodzinne, wyjazd z miasta, zapotrzebowanie na dostawę do magazynu..." class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-amber-500 text-gray-200 placeholder-gray-600 resize-none"></textarea>
+                            </div>
+
+                            <div class="flex justify-end pt-2">
+                                <button type="submit" id="submit-btn" class="bg-gradient-to-r from-amber-600 to-amber-500 text-black font-semibold text-sm px-6 py-3 rounded-lg hover:from-amber-500 hover:to-yellow-400 transition shadow-lg shadow-amber-600/10 cursor-pointer">
+                                    Wyślij wniosek do zarządu
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
+
+                <div id="tab-magazyn" class="tab-content hidden">
+                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-10 text-center">
+                        <span class="text-4xl mb-4 block">📦</span>
+                        <h3 class="text-xl font-bold text-gray-200 mb-2">Magazyn i Zaopatrzenie</h3>
+                        <p class="text-gray-500">System zarządzania magazynem jest w trakcie budowy. Wkrótce pojawi się tu lista dostępnego sprzętu i broni.</p>
+                    </div>
+                </div>
+
+                <div id="tab-dokumenty" class="tab-content hidden">
+                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-10 text-center">
+                        <span class="text-4xl mb-4 block">📄</span>
+                        <h3 class="text-xl font-bold text-gray-200 mb-2">Dokumentacja i Umowy</h3>
+                        <p class="text-gray-500">Miejsce na umowy z biznesami oraz logi operacyjne.</p>
+                    </div>
+                </div>
+
+                <div id="tab-kasa" class="tab-content hidden">
+                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-10 text-center">
+                        <span class="text-4xl mb-4 block">💰</span>
+                        <h3 class="text-xl font-bold text-gray-200 mb-2">Rozliczenia z pralni</h3>
+                        <p class="text-gray-500">System ewidencji zysków. Dostęp wyłącznie dla zaufanych członków.</p>
+                    </div>
+                </div>
+
+                <div id="tab-kodeks" class="tab-content hidden">
+                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-10 text-center">
+                        <span class="text-4xl mb-4 block">⚖️</span>
+                        <h3 class="text-xl font-bold text-gray-200 mb-2">Wewnętrzny Cennik i Zasady</h3>
+                        <p class="text-gray-500">Regulamin funkcjonowania na osiedlu La Mesa.</p>
+                    </div>
+                </div>
+
             </div>
-
-        </div>
-    </main>
+        </main>
+    </div>
 
     <script src="app.js"></script>
 </body>
