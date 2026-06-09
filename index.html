@@ -3,300 +3,193 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>U BCSO - System Zintegrowany</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>LA MESA CARTEL - System Zintegrowany</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0b0c10; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #11141a; }
-        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 3px; }
-        .nav-active { background-color: rgba(245, 158, 11, 0.1); color: #fbbf24; border-color: rgba(245, 158, 11, 0.2); }
-        .nav-inactive { color: #9ca3af; border-color: transparent; }
-        .nav-inactive:hover { background-color: rgba(31, 41, 55, 0.5); color: #e5e7eb; }
+        :root {
+            --bg-dark: #0f1015;
+            --bg-panel: #161824;
+            --accent-gold: #ff9f43;
+            --text-main: #f5f6fa;
+            --text-muted: #a4b0be;
+            --danger: #ff4d4d;
+            --success: #2ed573;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar Container */
+        .sidebar { width: 260px; background-color: var(--bg-panel); display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #23273a; padding: 20px; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
+        .brand-logo { width: 45px; height: 45px; background: var(--accent-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--bg-dark); font-size: 1.2rem; }
+        .brand-name h2 { font-size: 1.1rem; letter-spacing: 1px; color: var(--accent-gold); }
+        .brand-name p { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* Profil skrócony w Sidebarze */
+        .user-card { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); }
+        .user-avatar { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--success); margin: 0 auto 10px; background: #333; overflow: hidden; }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info h4 { font-size: 0.95rem; }
+        .user-info p { font-size: 0.8rem; color: var(--accent-gold); margin-top: 2px; }
+
+        /* Nawigacja */
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,159,67,0.1); color: var(--accent-gold); }
+        .logout-btn { color: var(--danger); margin-top: auto; cursor: pointer; }
+
+        /* Obszar główny */
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; position: relative; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Nagłówki sekcji */
+        .section-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .section-header h1 { font-size: 1.8rem; font-weight: 700; }
+        .status-badge { background: rgba(46, 213, 115, 0.1); color: var(--success); padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--success); }
+
+        /* Grid dla Magazynu i Kuchni */
+        .kitchen-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; }
+        .panel { background-color: var(--bg-panel); border-radius: 14px; padding: 25px; border: 1px solid #23273a; }
+        .panel h3 { font-size: 1.1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+
+        /* Magazyn */
+        .magazyn-list { display: flex; flex-direction: column; gap: 12px; }
+        .magazyn-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .magazyn-item span { font-weight: 500; }
+        .qty-tag { color: var(--accent-gold); font-weight: bold; background: rgba(255,159,67,0.1); padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; }
+
+        /* Zarządzanie Stanem */
+        .management-box { margin-bottom: 25px; background: rgba(255,255,255,0.02); border-radius: 10px; padding: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .form-group { display: flex; gap: 10px; margin-top: 10px; }
+        select, input[type="number"] { background: #1c1e2e; border: 1px solid #2d314a; color: white; padding: 10px; border-radius: 6px; flex-grow: 1; outline: none; }
+        input[type="number"] { width: 80px; flex-grow: 0; text-align: center; }
+        button { background: var(--accent-gold); color: var(--bg-dark); border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+
+        /* Kuchnia - Menu */
+        .dishes-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
+        .dish-card { background: rgba(255,255,255,0.02); border: 1px solid #23273a; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; }
+        .dish-card h4 { font-size: 1rem; color: #fff; margin-bottom: 8px; }
+        .dish-reqs { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; list-style: none; }
+        .dish-reqs li { margin-bottom: 30px; display: flex; align-items: center; gap: 6px; }
+        .dish-card button { width: 100%; background: transparent; border: 1px solid var(--accent-gold); color: var(--accent-gold); margin-top: auto; }
+        .dish-card button:hover { background: var(--accent-gold); color: var(--bg-dark); }
+
+        /* Minigra aktywnego gotowania */
+        .cooking-area { background: rgba(255,159,67,0.03); border: 1px dashed var(--accent-gold); border-radius: 12px; padding: 25px; text-align: center; }
+        .recipe-sequence { display: flex; justify-content: center; gap: 10px; margin: 15px 0 25px; }
+        .seq-item { background: #23273a; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid rgba(255,255,255,0.05); }
+        .seq-item.done { background: rgba(46, 213, 115, 0.2); border-color: var(--success); color: #fff; }
+        
+        .talerz-box { background: #0f1015; border-radius: 10px; min-height: 60px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); }
+        .talerz-item { background: var(--accent-gold); color: var(--bg-dark); font-weight: bold; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; animation: popIn 0.2s ease-out; }
+        
+        .ingredients-deck { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 15px; }
+        .ingredient-btn { background: #23273a; color: white; border: 1px solid #323852; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: 0.15s; }
+        .ingredient-btn:hover { background: #2d324a; border-color: var(--accent-gold); transform: translateY(-2px); }
+        .cancel-cook { background: transparent; border: none; color: var(--danger); margin-top: 20px; cursor: pointer; font-size: 0.9rem; text-decoration: underline; }
+
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="text-gray-200 min-h-screen">
+<body>
 
-    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-[#0b0c10] p-4">
-        <div class="bg-[#11141a] border border-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl shadow-black relative overflow-hidden">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black text-2xl shadow-lg shadow-amber-500/20 mx-auto mb-4">BC</div>
-                <h1 class="text-2xl font-bold tracking-wider text-amber-500">U BCSO</h1>
-                <p id="auth-subtitle" class="text-sm text-gray-500 uppercase tracking-widest mt-1">Zaloguj się do systemu</p>
+    <div class="sidebar">
+        <div class="top-sidebar">
+            <div class="brand">
+                <div class="brand-logo">LM</div>
+                <div class="brand-name">
+                    <h2>LA MESA CARTEL</h2>
+                    <p>ZINTEGROWANY PANEL</p>
+                </div>
             </div>
 
-            <form id="login-form" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Numer pracownika (ID)</label>
-                    <input type="text" id="login-id" required placeholder="Np. 001" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:border-amber-500 text-amber-500 font-mono">
+            <div class="user-card">
+                <div class="user-avatar">
+                    <img src="https://i.imgur.com/w4pB4b3.png" alt="Avatar">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Hasło dostępu</label>
-                    <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:border-amber-500 text-gray-200">
+                <div class="user-info">
+                    <h4>Zarząd La Mesa</h4>
+                    <p>El Patron (Szef)</p>
                 </div>
-                <button type="submit" id="login-btn" class="w-full bg-gradient-to-r from-amber-600 to-amber-500 text-black font-semibold text-sm px-6 py-3 rounded-lg hover:from-amber-500 hover:to-yellow-400 transition shadow-lg cursor-pointer">
-                    Autoryzuj dostęp
-                </button>
-                <div class="text-center mt-4">
-                    <button type="button" id="show-register-btn" class="text-xs text-amber-500/70 hover:text-amber-500 underline cursor-pointer">Nie masz konta? Wyślij wniosek o dostęp</button>
-                </div>
-            </form>
+            </div>
 
-            <form id="register-form" class="space-y-4 hidden">
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Imię i Nazwisko</label>
-                    <input type="text" id="reg-name" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Numer ID</label>
-                        <input type="text" id="reg-id" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Discord</label>
-                        <input type="text" id="reg-discord" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Hasło</label>
-                    <input type="password" id="reg-pass" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200">
-                </div>
-                <button type="submit" id="register-btn" class="w-full bg-gray-800 text-white border border-gray-600 font-semibold text-sm px-6 py-3 rounded-lg hover:bg-gray-700 transition mt-2 cursor-pointer">
-                    Wyślij wniosek do zarządu
-                </button>
-                <div class="text-center mt-2">
-                    <button type="button" id="show-login-btn" class="text-xs text-gray-500 hover:text-gray-300 underline cursor-pointer">Wróć do logowania</button>
-                </div>
-            </form>
+            <div class="nav-menu">
+                <div class="nav-item" onclick="switchTab('profil')"><i class="fa-solid fa-user"></i> Profil</div>
+                <div class="nav-item" onclick="switchTab('paragony')"><i class="fa-solid fa-cash-register"></i> Paragony & Kasa</div>
+                <div class="nav-item active" onclick="switchTab('magazyn-kuchnia')"><i class="fa-solid fa-box-open"></i> Magazyn & Kuchnia</div>
+                <div class="nav-item" onclick="switchTab('dokumenty')"><i class="fa-solid fa-file-invoice"></i> Dokumenty</div>
+            </div>
         </div>
+        
+        <div class="nav-item logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Wyloguj się</div>
     </div>
 
-    <div id="main-app" class="hidden min-h-screen flex">
-        <aside class="w-72 bg-[#11141a] border-r border-amber-900/30 flex flex-col justify-between p-6 shrink-0">
-            <div>
-                <div class="flex items-center gap-3 mb-8 pb-4 border-b border-gray-800">
-                    <div class="w-10 h-10 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black text-xl shadow-lg shadow-amber-500/20">BC</div>
-                    <div>
-                        <h1 class="font-bold text-lg tracking-wider text-amber-500">U BCSO</h1>
-                        <p class="text-xs text-gray-500 uppercase tracking-widest">System MDT</p>
-                    </div>
-                </div>
+    <div class="main-content">
+        
+        <div id="profil" class="tab-content">
+            <div class="section-header">
+                <h1>Profil Użytkownika</h1>
+            </div>
+            <p>Witaj w systemie organizacji La Mesa Cartel.</p>
+        </div>
 
-                <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 text-center mb-8">
-                    <div class="relative w-20 h-20 mx-auto mb-3">
-                        <img id="side-user-avatar" src="https://i.pravatar.cc/150?img=11" alt="Avatar" class="rounded-full border-2 border-amber-500 object-cover w-full h-full">
-                        <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-[#161a23]"></div>
-                    </div>
-                    <h2 id="side-user-name" class="font-semibold text-sm">Ładowanie...</h2>
-                    <p id="side-user-rank" class="text-xs text-amber-500 font-medium mt-1">...</p>
-                </div>
+        <div id="paragony" class="tab-content">
+            <div class="section-header">
+                <h1>Paragony & Kasa</h1>
+            </div>
+            <p>Brak transakcji do wyświetlenia.</p>
+        </div>
 
-                <nav class="space-y-2" id="sidebar-nav">
-                    <a href="#" data-tab="tab-panel" class="nav-btn nav-active flex items-center gap-3 px-4 py-3 rounded-lg font-medium border transition"><span>👤</span> Profil</a>
-                    <a href="#" data-tab="tab-kasa" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>💰</span> Paragony & Kasa</a>
-                    <a href="#" data-tab="tab-magazyn" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>📦</span> Magazyn & Kuchnia</a>
-                    <a href="#" data-tab="tab-dokumenty" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>📄</span> Dokumenty</a>
-                    <a href="#" id="nav-admin" data-tab="tab-admin" class="nav-btn nav-inactive hidden flex items-center gap-3 px-4 py-3 rounded-lg border transition border-red-500/30 text-red-400 bg-red-950/10 mt-6">
-                        <span>👑</span> Zarządzanie Kontami
-                    </a>
-                </nav>
+        <div id="dokumenty" class="tab-content">
+            <div class="section-header">
+                <h1>Dokumenty i Regulaminy</h1>
+            </div>
+            <p>Strefa dokumentacji wewnętrznej.</p>
+        </div>
+
+        <div id="magazyn-kuchnia" class="tab-content active">
+            <div class="section-header">
+                <h1>Magazyn & Kuchnia</h1>
+                <div class="status-badge" id="supabase-status">Połączono: Supabase</div>
             </div>
 
-            <div class="text-center text-xs text-gray-600 border-t border-gray-800 pt-4 mt-6">
-                <button id="logout-btn" class="text-red-400 hover:text-red-300 font-semibold mb-2 cursor-pointer w-full text-center">🚪 Wyloguj się</button>
-                <br>U BCSO &copy; 2026
-            </div>
-        </aside>
-
-        <main class="flex-1 p-8 overflow-y-auto">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 id="page-title" class="text-2xl font-bold tracking-tight">System</h2>
-                    <p id="page-subtitle" class="text-sm text-gray-400 mt-1">Zintegrowany panel zarządzania.</p>
-                </div>
-                <div class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs px-3 py-1.5 rounded-full font-medium">Połączono: Supabase</div>
-            </div>
-
-            <div class="max-w-5xl space-y-6">
+            <div class="kitchen-grid">
                 
-                <div id="tab-panel" class="tab-content block">
-                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 flex flex-col md:flex-row items-center gap-8 mb-6">
-                        <div class="flex flex-col items-center gap-3 shrink-0">
-                            <div class="w-32 h-32 rounded-xl overflow-hidden border border-amber-500/40">
-                                <img id="main-user-avatar" src="https://i.pravatar.cc/150?img=11" class="w-full h-full object-cover">
-                            </div>
-                            <label class="cursor-pointer bg-amber-600 hover:bg-amber-500 text-black text-xs font-bold px-3 py-1.5 rounded transition text-center">
-                                📷 Wgraj zdjęcie
-                                <input type="file" id="avatar-input" accept="image/*" class="hidden">
-                            </label>
+                <div class="panel">
+                    <h3><i class="fa-solid fa-warehouse"></i> Stan Magazynu</h3>
+                    
+                    <div class="management-box">
+                        <label style="font-size: 0.8rem; color: var(--text-muted);">Zarządzanie Stanem:</label>
+                        <div class="form-group">
+                            <select id="ingredient-select">
+                                <option value="Mięso">Mięso</option>
+                                <option value="Bułka">Bułka</option>
+                                <option value="Tortilla">Tortilla</option>
+                                <option value="Pomidor">Pomidor</option>
+                                <option value="Sałata">Sałata</option>
+                            </select>
+                            <input type="number" id="ingredient-qty" value="1" min="-500" max="500">
+                            <button onclick="handleManualStockUpdate()">Aktualizuj stan</button>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
-                                <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">Imię i Nazwisko</span>
-                                <span id="user-fullname" class="text-base font-medium">...</span>
-                            </div>
-                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
-                                <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">ID Pracownika</span>
-                                <span id="user-badge" class="text-base font-mono text-amber-500">...</span>
-                            </div>
-                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
-                                <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">Discord</span>
-                                <span id="user-discord" class="text-base text-gray-400">...</span>
-                            </div>
-                        </div>
+                    </div>
+
+                    <div class="magazyn-list" id="magazyn-render-target">
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Ładowanie danych z magazynu...</p>
                     </div>
                 </div>
 
-                <div id="tab-kasa" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6">
-                        <h3 class="text-lg font-bold text-amber-500 mb-4">Wystaw Paragon</h3>
-                        <form id="receipt-form" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-400 mb-1">Nick Discord Klienta</label>
-                                <input type="text" id="receipt-discord" required placeholder="np. jasiu_killer" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-400 mb-1">Wybierz gotowe danie</label>
-                                <select id="receipt-dish-select" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200 focus:border-amber-500">
-                                    <option value="">-- Wybierz z menu --</option>
-                                    <option value="Burger Klasyczny">Burger Klasyczny</option>
-                                    <option value="Taco Meksykańskie">Taco Meksykańskie</option>
-                                    <option value="Sałatka Wege">Sałatka Wege</option>
-                                    <option value="CUSTOM">Inne / Własne danie (wpisz poniżej)</option>
-                                </select>
-                            </div>
-                            <div id="custom-dish-block" class="hidden">
-                                <label class="block text-xs font-semibold text-amber-500 mb-1">Wpisz własną nazwę dania/towaru</label>
-                                <input type="text" id="receipt-custom-products" placeholder="np. Sok Pomarańczowy x3" class="w-full bg-[#161a23] border border-amber-600/50 rounded-lg px-4 py-2 text-sm text-gray-200">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-400 mb-1">Kwota transakcji ($)</label>
-                                <input type="number" id="receipt-amount" required placeholder="15000" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-amber-500 font-mono">
-                            </div>
-                            <button type="submit" id="receipt-btn" class="w-full bg-amber-600 text-black font-semibold text-sm px-4 py-2 rounded-lg hover:bg-amber-500 transition mt-2 cursor-pointer">
-                                Zapisz w księgach
-                            </button>
-                        </form>
+                <div class="panel" id="kitchen-panel">
                     </div>
-
-                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 flex flex-col">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-bold text-gray-200">Ostatnie transakcje</h3>
-                            <button onclick="fetchReceipts()" class="text-xs text-amber-500 hover:text-amber-400 cursor-pointer">Odśwież ↻</button>
-                        </div>
-                        <div class="flex-1 bg-[#161a23] rounded-lg border border-gray-800 p-2 overflow-y-auto max-h-80" id="receipts-list">
-                            <p class="text-sm text-gray-500 text-center p-4">Ładowanie paragonów...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-magazyn" class="tab-content hidden space-y-6">
-                    <div id="admin-warehouse-panel" class="bg-[#11141a] border border-red-900/40 rounded-xl p-5 mb-6 hidden">
-                        <h3 class="text-sm font-bold text-red-400 uppercase tracking-wider mb-3">👑 Panel Zarządu - Zarządzanie Zapasami</h3>
-                        <form id="warehouse-add-form" class="flex flex-wrap gap-4 items-end">
-                            <div class="flex-1 min-w-[200px]">
-                                <label class="block text-xs text-gray-400 mb-1">Nazwa składnika</label>
-                                <input type="text" id="inv-item-name" required placeholder="np. Mięso, Sałata" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-1.5 text-sm">
-                            </div>
-                            <div class="w-32">
-                                <label class="block text-xs text-gray-400 mb-1">Ilość (+ / -)</label>
-                                <input type="number" id="inv-item-qty" required placeholder="50" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-1.5 text-sm text-amber-500 font-mono">
-                            </div>
-                            <button type="submit" class="bg-red-900/30 text-red-400 border border-red-800 hover:bg-red-800 hover:text-white px-4 py-1.5 rounded-lg text-sm font-medium transition cursor-pointer">
-                                Zaktualizuj stan
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 md:col-span-1">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-base font-bold text-gray-200">📦 Stan Magazynu</h3>
-                                <button onclick="fetchInventory()" class="text-xs text-amber-500 hover:text-amber-400 cursor-pointer">Odśwież ↻</button>
-                            </div>
-                            <div id="inventory-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
-                                <p class="text-xs text-gray-500">Ładowanie składników...</p>
-                            </div>
-                        </div>
-
-                        <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 md:col-span-2">
-                            <h3 class="text-base font-bold text-amber-500 mb-2">🍳 Kuchnia U BCSO - Przygotuj Danie</h3>
-                            
-                            <div id="kitchen-recipes-view" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
-                                    <div>
-                                        <h4 class="font-bold text-sm text-gray-200">Burger Klasyczny</h4>
-                                        <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 1x Mięso<br>• 1x Bułka</p>
-                                    </div>
-                                    <button onclick="startCookingMinigame('Burger')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
-                                </div>
-                                <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
-                                    <div>
-                                        <h4 class="font-bold text-sm text-gray-200">Taco Meksykańskie</h4>
-                                        <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 1x Mięso<br>• 1x Tortilla<br>• 1x Pomidor</p>
-                                    </div>
-                                    <button onclick="startCookingMinigame('Taco')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
-                                </div>
-                                <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
-                                    <div>
-                                        <h4 class="font-bold text-sm text-gray-200">Sałatka Wege</h4>
-                                        <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 2x Sałata<br>• 1x Pomidor</p>
-                                    </div>
-                                    <button onclick="startCookingMinigame('Salatka')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
-                                </div>
-                            </div>
-
-                            <div id="kitchen-minigame-view" class="hidden bg-[#161a23] border border-amber-500/20 rounded-xl p-6 text-center">
-                                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-800">
-                                    <span class="text-xs text-amber-500 font-bold uppercase tracking-wider">Tryb Przygotowywania Potrawy</span>
-                                    <button onclick="cancelCooking()" class="text-xs text-gray-500 hover:text-red-400 cursor-pointer">Anuluj ×</button>
-                                </div>
-                                
-                                <h4 id="mg-dish-name" class="text-lg font-bold text-gray-100 mb-1">Burger</h4>
-                                <p class="text-xs text-gray-400 mb-4">Ułóż składniki w podanej kolejności:</p>
-                                
-                                <div id="mg-recipe-sequence" class="flex justify-center items-center gap-2 mb-6 font-medium text-xs bg-black/40 py-2 px-4 rounded-lg inline-flex"></div>
-
-                                <div class="mb-6">
-                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">Twój Talerz:</p>
-                                    <div id="mg-player-plate" class="flex flex-col-reverse justify-center items-center gap-1 min-h-[80px] bg-black/20 rounded-xl p-4 border border-dashed border-gray-800">
-                                        <span class="text-xs text-gray-600 italic" id="plate-empty-text">Talerz jest pusty...</span>
-                                    </div>
-                                </div>
-
-                                <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">Blat roboczy (Klikaj kolejno):</p>
-                                <div class="flex flex-wrap justify-center gap-2" id="mg-ingredients-buttons">
-                                    <button onclick="clickMinigameIngredient('Bułka')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🍞 Bułka</button>
-                                    <button onclick="clickMinigameIngredient('Mięso')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🥩 Mięso</button>
-                                    <button onclick="clickMinigameIngredient('Sałata')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🥬 Sałata</button>
-                                    <button onclick="clickMinigameIngredient('Pomidor')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🍅 Pomidor</button>
-                                    <button onclick="clickMinigameIngredient('Tortilla')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🫓 Tortilla</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-admin" class="tab-content hidden">
-                    <div class="bg-[#11141a] border border-red-900/50 rounded-xl p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-lg font-bold text-red-400">Oczekujące wnioski o dostęp (Konta)</h3>
-                            <button onclick="fetchPendingUsers()" class="text-xs bg-red-900/30 text-red-400 px-3 py-1 rounded border border-red-800 hover:bg-red-900/50 cursor-pointer">Odśwież listę</button>
-                        </div>
-                        <div id="pending-users-list" class="space-y-3">
-                            <p class="text-sm text-gray-500">Brak oczekujących wniosków.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-dokumenty" class="tab-content hidden">
-                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-10 text-center text-gray-500">Moduł dokumentów w przygotowaniu...</div>
-                </div>
 
             </div>
-        </main>
+        </div>
+
     </div>
 
     <script src="app.js"></script>
