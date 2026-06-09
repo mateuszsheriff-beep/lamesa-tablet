@@ -7,6 +7,12 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 let CurrentUser = null;
 let localInventory = {}; // Podgląd magazynu w pamięci podręcznej strony
 
+// STAN GLOBALNY MINIGRY KULINARNEJ
+let currentGameType = null;
+let currentRecipeTarget = []; 
+let currentPlayerStack = [];  
+let currentDbRequirements = {}; 
+
 document.addEventListener("DOMContentLoaded", () => {
     setupAuthUI();
     setupLogin();
@@ -24,17 +30,21 @@ function setupAuthUI() {
     const regForm = document.getElementById("register-form");
     const authSubtitle = document.getElementById("auth-subtitle");
 
-    showRegBtn.addEventListener("click", () => {
-        loginForm.classList.add("hidden");
-        regForm.classList.remove("hidden");
-        authSubtitle.innerText = "Wyślij wniosek o założenie konta";
-    });
+    if (showRegBtn) {
+        showRegBtn.addEventListener("click", () => {
+            loginForm.classList.add("hidden");
+            regForm.classList.remove("hidden");
+            authSubtitle.innerText = "Wyślij wniosek o założenie konto";
+        });
+    }
 
-    showLoginBtn.addEventListener("click", () => {
-        regForm.classList.add("hidden");
-        loginForm.classList.remove("hidden");
-        authSubtitle.innerText = "Zaloguj się do systemu";
-    });
+    if (showLoginBtn) {
+        showLoginBtn.addEventListener("click", () => {
+            regForm.classList.add("hidden");
+            loginForm.classList.remove("hidden");
+            authSubtitle.innerText = "Zaloguj się do systemu";
+        });
+    }
 }
 
 // Logowanie
@@ -52,7 +62,7 @@ function setupLogin() {
 
         try {
             if (idInput === "001" && passInput === "zarzad") {
-                CurrentUser = { badge: "001", fullname: "Zarząd La Mesa", rank: "El Patron (Szef)", discord: "boss_lamesa", is_admin: true, avatar_url: null };
+                CurrentUser = { badge: "001", fullname: "Zarząd U BCSO", rank: "Szeryf (Zarząd)", discord: "szeryf_bcso", is_admin: true, avatar_url: null };
                 loginSuccess();
                 return;
             }
@@ -74,7 +84,7 @@ function setupLogin() {
                 return;
             }
 
-            CurrentUser = { ...data, is_admin: false };
+            CurrentUser = { ...data, is_admin: (data.rank.toLowerCase().includes('zarząd') || data.rank.toLowerCase().includes('szeryf')) };
             loginSuccess();
 
         } catch (error) {
@@ -97,14 +107,12 @@ function loginSuccess() {
     document.getElementById("login-screen").classList.add("hidden");
     document.getElementById("main-app").classList.remove("hidden");
     
-    // Rysowanie danych profilowych
     document.getElementById("side-user-name").innerText = CurrentUser.fullname;
     document.getElementById("side-user-rank").innerText = CurrentUser.rank;
     document.getElementById("user-fullname").innerText = CurrentUser.fullname;
     document.getElementById("user-badge").innerText = CurrentUser.badge;
     document.getElementById("user-discord").innerText = CurrentUser.discord;
 
-    // Przypisanie awataru z bazy (lub domyślny)
     const defaultAvatar = "https://i.pravatar.cc/150?img=11";
     document.getElementById("side-user-avatar").src = CurrentUser.avatar_url || defaultAvatar;
     document.getElementById("main-user-avatar").src = CurrentUser.avatar_url || defaultAvatar;
@@ -139,7 +147,7 @@ function setupRegistration() {
 
         try {
             const { error } = await supabaseClient.from('cartel_users').insert([
-                { badge: badge, password: pass, fullname: name, discord: discord, is_approved: false, rank: "Rekrut" }
+                { badge: badge, password: pass, fullname: name, discord: discord, is_approved: false, rank: "Kadet" }
             ]);
 
             if (error) throw error;
@@ -172,7 +180,7 @@ function setupNavigation() {
     });
 }
 
-// Funkcja wgrywania własnego zdjęcia profilowego (Konwersja do Base64 i zapis do bazy)
+// Wgrywanie zdjęć profilowych
 function setupAvatarUpload() {
     const avatarInput = document.getElementById("avatar-input");
     
@@ -180,7 +188,6 @@ function setupAvatarUpload() {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Blokada rozmiaru pliku powyżej 1.5MB żeby kolumna tekstowa to udźwignęła
         if (file.size > 1500000) {
             alert("Zdjęcie jest za duże! Maksymalny rozmiar to 1.5 MB.");
             return;
@@ -191,14 +198,12 @@ function setupAvatarUpload() {
             const base64String = reader.result;
 
             if (CurrentUser.badge === "001") {
-                // Dla szefa lokalnie, bo konto 001 nie siedzi na stałe w tabeli users jako pojedynczy wiersz
                 document.getElementById("side-user-avatar").src = base64String;
                 document.getElementById("main-user-avatar").src = base64String;
                 alert("Zmieniono tymczasowy awatar Szefa.");
                 return;
             }
 
-            // Zapis do tabeli cartel_users
             const { error } = await supabaseClient
                 .from('cartel_users')
                 .update({ avatar_url: base64String })
@@ -217,14 +222,13 @@ function setupAvatarUpload() {
     });
 }
 
-// Paragony (Wybór z menu + własna nazwa)
+// Paragony & Kasa
 function setupReceipts() {
     const form = document.getElementById("receipt-form");
     const btn = document.getElementById("receipt-btn");
     const dishSelect = document.getElementById("receipt-dish-select");
     const customBlock = document.getElementById("custom-dish-block");
 
-    // Dynamiczne pokazywanie inputu na własną nazwę
     dishSelect.addEventListener("change", () => {
         if (dishSelect.value === "CUSTOM") {
             customBlock.classList.remove("hidden");
@@ -243,7 +247,6 @@ function setupReceipts() {
         const clientDiscord = document.getElementById("receipt-discord").value;
         const amount = parseInt(document.getElementById("receipt-amount").value, 10);
         
-        // Określanie nazwy towaru
         let finalProduct = "";
         if (dishSelect.value === "CUSTOM") {
             finalProduct = document.getElementById("receipt-custom-products").value;
@@ -263,12 +266,12 @@ function setupReceipts() {
 
             if (error) throw error;
             
-            alert("Paragon wystawiony!");
+            alert("Zapisano pomyślnie paragon!");
             form.reset();
             customBlock.classList.add("hidden");
             fetchReceipts();
         } catch (err) {
-            alert("Błąd zapisu: " + err.message);
+            alert("Błąd zapisu paragonu: " + err.message);
         } finally {
             btn.disabled = false;
             btn.innerText = "Zapisz w księgach";
@@ -276,188 +279,266 @@ function setupReceipts() {
     });
 }
 
+// Pobieranie paragonów
 window.fetchReceipts = async function() {
-    const list = document.getElementById("receipts-list");
-    list.innerHTML = "<p class='text-sm text-gray-500 text-center p-4'>Pobieranie...</p>";
+    const container = document.getElementById("receipts-list");
+    if (!container) return;
 
-    const { data, error } = await supabaseClient
-        .from('cartel_paragony')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
+    try {
+        const { data, error } = await supabaseClient
+            .from('cartel_paragony')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(30);
 
-    if (error) {
-        list.innerHTML = `<p class='text-sm text-red-500 text-center p-2'>Błąd: ${error.message}</p>`;
-        return;
-    }
+        if (error) throw error;
 
-    list.innerHTML = "";
-    data.forEach(receipt => {
-        const div = document.createElement("div");
-        div.className = "flex justify-between items-center p-3 border-b border-gray-800 last:border-0 text-xs sm:text-sm";
-        div.innerHTML = `
-            <div>
-                <span class="font-bold text-gray-200">${receipt.client_discord}</span>
-                <span class="text-xs text-amber-500 block">Danie/Towar: ${receipt.products || 'Brak'}</span>
-                <span class="text-xs text-gray-500 block">Wystawił: ${receipt.seller_name}</span>
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p class="text-xs text-gray-500 text-center p-4">Brak zarejestrowanych transakcji.</p>';
+            return;
+        }
+
+        container.innerHTML = data.map(item => `
+            <div class="bg-[#11141a] p-3 rounded-lg mb-2 border border-gray-800 text-xs flex justify-between items-center">
+                <div>
+                    <p class="font-bold text-amber-400">${item.products}</p>
+                    <p class="text-gray-500">Sprzedawca: ${item.seller_name} | Klient: @${item.client_discord}</p>
+                </div>
+                <div class="font-mono font-bold text-green-400 text-sm">$${item.amount.toLocaleString()}</div>
             </div>
-            <div class="text-amber-500 font-mono font-bold">$${receipt.amount}</div>
-        `;
-        list.appendChild(div);
-    });
-}
+        `).join('');
 
-// SYSTEM MAGAZYNU I KUCHNI
+    } catch (err) {
+        container.innerHTML = `<p class="text-xs text-red-400 p-2">Błąd ładowania: ${err.message}</p>`;
+    }
+};
+
+// Magazyn - Panel Zarządzania (Zarząd)
 function setupWarehouse() {
-    const addForm = document.getElementById("warehouse-add-form");
-    
-    // Dodawanie/odejmowanie zasobów przez Zarząd
-    addForm.addEventListener("submit", async (e) => {
+    const form = document.getElementById("warehouse-add-form");
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const itemName = document.getElementById("inv-item-name").value.trim();
-        const qtyChange = parseInt(document.getElementById("inv-item-qty").value, 10);
+        const itemQty = parseInt(document.getElementById("inv-item-qty").value, 10);
 
-        // Najpierw sprawdzamy czy składnik istnieje w bazie
-        const currentQty = localInventory[itemName] || 0;
-        const newQty = Math.max(0, currentQty + qtyChange);
+        try {
+            const currentQty = localInventory[itemName] || 0;
+            const finalQty = Math.max(0, currentQty + itemQty);
 
-        const { error } = await supabaseClient
-            .from('cartel_magazyn')
-            .upsert({ item_name: itemName, quantity: newQty }, { onConflict: 'item_name' });
+            const { error } = await supabaseClient
+                .from('cartel_magazyn')
+                .upsert({ item_name: itemName, quantity: finalQty }, { onConflict: 'item_name' });
 
-        if (error) {
-            alert("Błąd aktualizacji magazynu: " + error.message);
-        } else {
-            alert(`Zaktualizowano stan składnika: ${itemName} (Obecnie: ${newQty})`);
-            addForm.reset();
+            if (error) throw error;
+
+            alert(`Zaktualizowano ${itemName}. Nowy stan: ${finalQty}`);
+            form.reset();
             fetchInventory();
+        } catch (err) {
+            alert("Błąd magazynu: " + err.message);
         }
     });
 }
 
-// Pobieranie stanu magazynu dla wszystkich pracowników
+// Magazyn - Pobieranie stanu zapasów
 window.fetchInventory = async function() {
-    const list = document.getElementById("inventory-list");
-    list.innerHTML = "<p class='text-xs text-gray-500'>Pobieranie danych...</p>";
+    const container = document.getElementById("inventory-list");
+    if (!container) return;
 
-    const { data, error } = await supabaseClient.from('cartel_magazyn').select('*').order('item_name', { ascending: true });
+    try {
+        const { data, error } = await supabaseClient.from('cartel_magazyn').select('*');
+        if (error) throw error;
 
-    if (error) {
-        list.innerHTML = "<p class='text-xs text-red-500'>Błąd pobierania składników.</p>";
-        return;
+        localInventory = {};
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p class="text-xs text-gray-500">Magazyn jest pusty.</p>';
+            return;
+        }
+
+        container.innerHTML = data.map(item => {
+            localInventory[item.item_name] = item.quantity;
+            const colorClass = item.quantity < 5 ? 'text-red-400 font-bold' : 'text-amber-500 font-mono';
+            return `
+                <div class="flex justify-between items-center bg-[#161a23] p-2 rounded border border-gray-800 text-xs">
+                    <span class="text-gray-300 font-medium">📦 ${item.item_name}</span>
+                    <span class="${colorClass}">${item.quantity} szt.</span>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        container.innerHTML = `<p class="text-xs text-red-400">Błąd: ${err.message}</p>`;
     }
-
-    list.innerHTML = "";
-    localInventory = {}; // czyszczenie lokalnego cache
-
-    data.forEach(item => {
-        localInventory[item.item_name] = item.quantity;
-        
-        const div = document.createElement("div");
-        div.className = "flex justify-between items-center bg-[#161a23] px-3 py-2 rounded-lg border border-gray-800/80 text-xs";
-        
-        // Kolorowanie w zależności od braków
-        const qtyColor = item.quantity < 10 ? "text-red-500 font-bold" : "text-amber-500";
-        const alertLabel = item.quantity < 10 ? " <span class='text-[10px] text-red-400 font-normal'>(Kończy się!)</span>" : "";
-
-        div.innerHTML = `
-            <span class="font-medium text-gray-300">📦 ${item.item_name}${alertLabel}</span>
-            <span class="font-mono ${qtyColor}">${item.quantity} szt.</span>
-        `;
-        list.appendChild(div);
-    });
 };
 
-// KRAFCENIE DAŃ (Używane przez pracowników)
-window.craftDish = async function(dishType) {
-    let requirements = {};
-    let dishName = "";
+// Panel Admina - Zatwierdzanie użytkowników
+window.fetchPendingUsers = async function() {
+    const container = document.getElementById("pending-users-list");
+    if (!container) return;
 
-    // Definiowanie receptur kulinarnych kartelu
+    try {
+        const { data, error } = await supabaseClient
+            .from('cartel_users')
+            .select('*')
+            .eq('is_approved', false);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p class="text-xs text-gray-500 p-2">Brak oczekujących wniosków o utworzenie konta.</p>';
+            return;
+        }
+
+        container.innerHTML = data.map(u => `
+            <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs">
+                <div>
+                    <p class="font-bold text-gray-200 text-sm">${u.fullname} <span class="text-amber-500 font-mono text-xs">(ID: ${u.badge})</span></p>
+                    <p class="text-gray-500">Discord: @${u.discord} | Przypisywana ranga: ${u.rank}</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="approveUser('${u.badge}')" class="bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-black border border-green-500/30 px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer">Akceptuj</button>
+                    <button onclick="rejectUser('${u.badge}')" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer">Odrzuć</button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (err) {
+        container.innerHTML = `<p class="text-xs text-red-400">Błąd listowania wniosków: ${err.message}</p>`;
+    }
+};
+
+window.approveUser = async function(badgeId) {
+    if (!confirm(`Czy na pewno chcesz zatwierdzić konto pracownika o ID: ${badgeId}?`)) return;
+    try {
+        const { error } = await supabaseClient.from('cartel_users').update({ is_approved: true }).eq('badge', badgeId);
+        if (error) throw error;
+        alert("Konto zostało pomyślnie aktywowane!");
+        fetchPendingUsers();
+    } catch (err) {
+        alert("Błąd zatwierdzania: " + err.message);
+    }
+};
+
+window.rejectUser = async function(badgeId) {
+    if (!confirm(`Czy chcesz trwale usunąć ten wniosek o dostęp (ID: ${badgeId})?`)) return;
+    try {
+        const { error } = await supabaseClient.from('cartel_users').delete().eq('badge', badgeId);
+        if (error) throw error;
+        alert("Wniosek został odrzucony i usunięty.");
+        fetchPendingUsers();
+    } catch (err) {
+        alert("Błąd odrzucania: " + err.message);
+    }
+};
+
+// ==========================================
+// LOGIKA INTERAKTYWNEJ MINIGRY KULINARNEJ
+// ==========================================
+
+window.startCookingMinigame = function(dishType) {
+    currentGameType = dishType;
+    currentPlayerStack = [];
+    
     if (dishType === 'Burger') {
-        requirements = { "Mięso": 1, "Bułka": 1 };
-        dishName = "Burger Klasyczny";
+        currentRecipeTarget = ['Bułka', 'Mięso', 'Sałata', 'Bułka'];
+        currentDbRequirements = { "Mięso": 1, "Bułka": 1 }; 
+        document.getElementById("mg-dish-name").innerText = "Burger Klasyczny";
     } else if (dishType === 'Taco') {
-        requirements = { "Mięso": 1, "Tortilla": 1, "Pomidor": 1 };
-        dishName = "Taco Meksykańskie";
+        currentRecipeTarget = ['Tortilla', 'Mięso', 'Pomidor', 'Sałata'];
+        currentDbRequirements = { "Mięso": 1, "Tortilla": 1, "Pomidor": 1 };
+        document.getElementById("mg-dish-name").innerText = "Taco Meksykańskie";
     } else if (dishType === 'Salatka') {
-        requirements = { "Sałata": 2, "Pomidor": 1 };
-        dishName = "Sałatka Wege";
+        currentRecipeTarget = ['Sałata', 'Pomidor', 'Sałata'];
+        currentDbRequirements = { "Sałata": 2, "Pomidor": 1 };
+        document.getElementById("mg-dish-name").innerText = "Sałatka Wege";
     }
 
-    // Sprawdzenie czy w magazynie jest wystarczająco zasobów
-    for (const [ingredient, neededQty] of Object.entries(requirements)) {
+    // Walidacja surowców na starcie gry
+    for (const [ingredient, neededQty] of Object.entries(currentDbRequirements)) {
         const available = localInventory[ingredient] || 0;
         if (available < neededQty) {
-            alert(`Błąd: W magazynie brakuje składnika: "${ingredient}". Potrzebujesz ${neededQty}, a jest tylko ${available}!`);
+            alert(`Błąd: W magazynie brakuje składników, by zacząć! (${ingredient}: potrzebujesz ${neededQty}, masz ${available})`);
             return;
         }
     }
 
-    // Odejmowanie składników w bazie danych
-    try {
-        for (const [ingredient, neededQty] of Object.entries(requirements)) {
-            const currentQty = localInventory[ingredient];
-            const updatedQty = currentQty - neededQty;
+    document.getElementById("kitchen-recipes-view").classList.add("hidden");
+    document.getElementById("kitchen-minigame-view").classList.remove("hidden");
 
-            const { error } = await supabaseClient
-                .from('cartel_magazyn')
-                .update({ quantity: updatedQty })
-                .eq('item_name', ingredient);
+    const seqBox = document.getElementById("mg-recipe-sequence");
+    seqBox.innerHTML = currentRecipeTarget.map(item => `
+        <span class="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-1.5 py-0.5 rounded text-[11px] font-mono">${item}</span>
+    `).join('<span class="text-gray-600 px-0.5">➔</span>');
 
-            if (error) throw error;
+    renderPlayerPlate();
+};
+
+window.cancelCooking = function() {
+    document.getElementById("kitchen-minigame-view").classList.add("hidden");
+    document.getElementById("kitchen-recipes-view").classList.remove("hidden");
+    currentGameType = null;
+};
+
+window.clickMinigameIngredient = async function(ingredientName) {
+    if (!currentGameType) return;
+
+    const currentStepIndex = currentPlayerStack.length;
+    const correctStepName = currentRecipeTarget[currentStepIndex];
+
+    if (ingredientName !== correctStepName) {
+        alert("❌ Zła kolejność! Przepis zepsuty, twój blat roboczy ląduje w koszu. Zaczynasz od nowa!");
+        currentPlayerStack = [];
+        renderPlayerPlate();
+        return;
+    }
+
+    currentPlayerStack.push(ingredientName);
+    renderPlayerPlate();
+
+    if (currentPlayerStack.length === currentRecipeTarget.length) {
+        try {
+            // Po prawidłowym ułożeniu zdejmujemy towary ze stanu Supabase
+            for (const [ingredient, neededQty] of Object.entries(currentDbRequirements)) {
+                const currentQty = localInventory[ingredient];
+                const updatedQty = Math.max(0, currentQty - neededQty);
+
+                const { error } = await supabaseClient
+                    .from('cartel_magazyn')
+                    .update({ quantity: updatedQty })
+                    .eq('item_name', ingredient);
+
+                if (error) throw error;
+            }
+
+            alert(`🎉 Świetna robota! Potrawa została złożona idealnie i wydana z magazynu.`);
+            cancelCooking();
+            fetchInventory(); 
+
+        } catch (err) {
+            alert("Błąd synchronizacji zmian z bazą: " + err.message);
         }
-
-        alert(`Sukces! Przygotowano pomyślnie potrawę: ${dishName}. Składniki zostały pobrane z magazynu.`);
-        fetchInventory(); // Odśwież stan magazynu na ekranie
-    } catch (err) {
-        alert("Wystąpił problem przy krafceniu potrawy: " + err.message);
     }
 };
 
-// Panel Zarządu - Wnioski
-window.fetchPendingUsers = async function() {
-    const list = document.getElementById("pending-users-list");
-    list.innerHTML = "<p class='text-sm text-gray-500'>Szukam wniosków...</p>";
+function renderPlayerPlate() {
+    const plate = document.getElementById("mg-player-plate");
+    const emptyText = document.getElementById("plate-empty-text");
 
-    const { data, error } = await supabaseClient.from('cartel_users').select('*').eq('is_approved', false);
-
-    if (error) {
-        list.innerHTML = `<p class='text-sm text-red-500'>Błąd bazy: ${error.message}</p>`;
-        return;
+    if (currentPlayerStack.length === 0) {
+        plate.innerHTML = '';
+        plate.appendChild(emptyText);
+        emptyText.classList.remove("hidden");
+    } else {
+        emptyText.classList.add("hidden");
+        plate.innerHTML = '';
+        
+        currentPlayerStack.forEach(item => {
+            const el = document.createElement("div");
+            el.className = "w-48 bg-amber-600 text-black font-bold text-xs py-1 rounded shadow text-center border border-amber-400 uppercase tracking-wider animate-bounce-short";
+            el.innerText = item;
+            plate.appendChild(el);
+        });
     }
-
-    if (!data || !data.length) {
-        list.innerHTML = "<p class='text-sm text-gray-500'>Brak oczekujących kont do akceptacji.</p>";
-        return;
-    }
-
-    list.innerHTML = "";
-    data.forEach(user => {
-        const div = document.createElement("div");
-        div.className = "bg-[#161a23] p-4 rounded-lg border border-red-900/30 flex justify-between items-center";
-        div.innerHTML = `
-            <div>
-                <p class="font-bold text-gray-200 text-sm">${user.fullname} <span class="text-gray-500 font-normal">(${user.discord})</span></p>
-                <p class="text-xs text-gray-400 mt-1">ID: <span class="text-amber-500 font-mono">${user.badge}</span></p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="approveUser(${user.id})" class="bg-green-600/20 text-green-500 border border-green-600 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded text-xs transition cursor-pointer">Akceptuj</button>
-                <button onclick="rejectUser(${user.id})" class="bg-red-600/20 text-red-500 border border-red-600 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded text-xs transition cursor-pointer">Odrzuć</button>
-            </div>
-        `;
-        list.appendChild(div);
-    });
 }
-
-window.approveUser = async function(userId) {
-    if(!confirm("Zaakceptować to konto?")) return;
-    await supabaseClient.from('cartel_users').update({ is_approved: true }).eq('id', userId);
-    fetchPendingUsers();
-};
-
-window.rejectUser = async function(userId) {
-    if(!confirm("Usunąć ten wniosek?")) return;
-    await supabaseClient.from('cartel_users').delete().eq('id', userId);
-    fetchPendingUsers();
-};

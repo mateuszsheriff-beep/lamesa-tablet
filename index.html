@@ -19,12 +19,11 @@
 </head>
 <body class="text-gray-200 min-h-screen">
 
-    <!-- EKRAN LOGOWANIA -->
     <div id="login-screen" class="min-h-screen flex items-center justify-center bg-[#0b0c10] p-4">
         <div class="bg-[#11141a] border border-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl shadow-black relative overflow-hidden">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black text-2xl shadow-lg shadow-amber-500/20 mx-auto mb-4">BC</div>
-<h1 class="text-2xl font-bold tracking-wider text-amber-500">U BCSO</h1>
+                <h1 class="text-2xl font-bold tracking-wider text-amber-500">U BCSO</h1>
                 <p id="auth-subtitle" class="text-sm text-gray-500 uppercase tracking-widest mt-1">Zaloguj się do systemu</p>
             </div>
 
@@ -74,15 +73,14 @@
         </div>
     </div>
 
-    <!-- GŁÓWNA APLIKACJA -->
     <div id="main-app" class="hidden min-h-screen flex">
         <aside class="w-72 bg-[#11141a] border-r border-amber-900/30 flex flex-col justify-between p-6 shrink-0">
             <div>
                 <div class="flex items-center gap-3 mb-8 pb-4 border-b border-gray-800">
-                    <div class="w-10 h-10 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black text-xl shadow-lg shadow-amber-500/20">LM</div>
+                    <div class="w-10 h-10 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-full flex items-center justify-center font-bold text-black text-xl shadow-lg shadow-amber-500/20">BC</div>
                     <div>
-                        <h1 class="font-bold text-lg tracking-wider text-amber-500">LA MESA</h1>
-                        <p class="text-xs text-gray-500 uppercase tracking-widest">Cartel System</p>
+                        <h1 class="font-bold text-lg tracking-wider text-amber-500">U BCSO</h1>
+                        <p class="text-xs text-gray-500 uppercase tracking-widest">System MDT</p>
                     </div>
                 </div>
 
@@ -108,7 +106,7 @@
 
             <div class="text-center text-xs text-gray-600 border-t border-gray-800 pt-4 mt-6">
                 <button id="logout-btn" class="text-red-400 hover:text-red-300 font-semibold mb-2 cursor-pointer w-full text-center">🚪 Wyloguj się</button>
-                <br>La Mesa Cartel &copy; 2026
+                <br>U BCSO &copy; 2026
             </div>
         </aside>
 
@@ -123,7 +121,6 @@
 
             <div class="max-w-5xl space-y-6">
                 
-                <!-- ZAKŁADKA: PROFIL -->
                 <div id="tab-panel" class="tab-content block">
                     <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 flex flex-col md:flex-row items-center gap-8 mb-6">
                         <div class="flex flex-col items-center gap-3 shrink-0">
@@ -152,7 +149,6 @@
                     </div>
                 </div>
 
-                <!-- ZAKŁADKA: PARAGONY -->
                 <div id="tab-kasa" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6">
                         <h3 class="text-lg font-bold text-amber-500 mb-4">Wystaw Paragon</h3>
@@ -196,9 +192,7 @@
                     </div>
                 </div>
 
-                <!-- ZAKŁADKA: MAGAZYN I KUCHNIA -->
-                <div id="tab-magazyn" class="tab-content hidden class='space-y-6'">
-                    <!-- PANEL ZARZĄDU: DODAWANIE DO MAGAZYNU -->
+                <div id="tab-magazyn" class="tab-content hidden space-y-6">
                     <div id="admin-warehouse-panel" class="bg-[#11141a] border border-red-900/40 rounded-xl p-5 mb-6 hidden">
                         <h3 class="text-sm font-bold text-red-400 uppercase tracking-wider mb-3">👑 Panel Zarządu - Zarządzanie Zapasami</h3>
                         <form id="warehouse-add-form" class="flex flex-wrap gap-4 items-end">
@@ -217,7 +211,6 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- KANAŁ/STAN MAGAZYNU DLA PRACOWNIKÓW -->
                         <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 md:col-span-1">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-base font-bold text-gray-200">📦 Stan Magazynu</h3>
@@ -228,42 +221,64 @@
                             </div>
                         </div>
 
-                        <!-- KRAFCENIE DAŃ Z MATERIAŁÓW -->
                         <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 md:col-span-2">
-                            <h3 class="text-base font-bold text-amber-500 mb-2">🍳 Kuchnia - Przygotuj Danie</h3>
-                            <p class="text-xs text-gray-400 mb-4">Wybierz potrawę do zrobienia. System automatycznie zabierze odpowiednie składniki z magazynu.</p>
+                            <h3 class="text-base font-bold text-amber-500 mb-2">🍳 Kuchnia U BCSO - Przygotuj Danie</h3>
                             
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <!-- Przepis 1 -->
+                            <div id="kitchen-recipes-view" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
                                     <div>
                                         <h4 class="font-bold text-sm text-gray-200">Burger Klasyczny</h4>
                                         <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 1x Mięso<br>• 1x Bułka</p>
                                     </div>
-                                    <button onclick="craftDish('Burger')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Zrób Burgera</button>
+                                    <button onclick="startCookingMinigame('Burger')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
                                 </div>
-                                <!-- Przepis 2 -->
                                 <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
                                     <div>
                                         <h4 class="font-bold text-sm text-gray-200">Taco Meksykańskie</h4>
                                         <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 1x Mięso<br>• 1x Tortilla<br>• 1x Pomidor</p>
                                     </div>
-                                    <button onclick="craftDish('Taco')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Zrób Taco</button>
+                                    <button onclick="startCookingMinigame('Taco')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
                                 </div>
-                                <!-- Przepis 3 -->
                                 <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
                                     <div>
                                         <h4 class="font-bold text-sm text-gray-200">Sałatka Wege</h4>
                                         <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 2x Sałata<br>• 1x Pomidor</p>
                                     </div>
-                                    <button onclick="craftDish('Salatka')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Zrób Sałatkę</button>
+                                    <button onclick="startCookingMinigame('Salatka')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
+                                </div>
+                            </div>
+
+                            <div id="kitchen-minigame-view" class="hidden bg-[#161a23] border border-amber-500/20 rounded-xl p-6 text-center">
+                                <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-800">
+                                    <span class="text-xs text-amber-500 font-bold uppercase tracking-wider">Tryb Przygotowywania Potrawy</span>
+                                    <button onclick="cancelCooking()" class="text-xs text-gray-500 hover:text-red-400 cursor-pointer">Anuluj ×</button>
+                                </div>
+                                
+                                <h4 id="mg-dish-name" class="text-lg font-bold text-gray-100 mb-1">Burger</h4>
+                                <p class="text-xs text-gray-400 mb-4">Ułóż składniki w podanej kolejności:</p>
+                                
+                                <div id="mg-recipe-sequence" class="flex justify-center items-center gap-2 mb-6 font-medium text-xs bg-black/40 py-2 px-4 rounded-lg inline-flex"></div>
+
+                                <div class="mb-6">
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">Twój Talerz:</p>
+                                    <div id="mg-player-plate" class="flex flex-col-reverse justify-center items-center gap-1 min-h-[80px] bg-black/20 rounded-xl p-4 border border-dashed border-gray-800">
+                                        <span class="text-xs text-gray-600 italic" id="plate-empty-text">Talerz jest pusty...</span>
+                                    </div>
+                                </div>
+
+                                <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-2">Blat roboczy (Klikaj kolejno):</p>
+                                <div class="flex flex-wrap justify-center gap-2" id="mg-ingredients-buttons">
+                                    <button onclick="clickMinigameIngredient('Bułka')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🍞 Bułka</button>
+                                    <button onclick="clickMinigameIngredient('Mięso')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🥩 Mięso</button>
+                                    <button onclick="clickMinigameIngredient('Sałata')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🥬 Sałata</button>
+                                    <button onclick="clickMinigameIngredient('Pomidor')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🍅 Pomidor</button>
+                                    <button onclick="clickMinigameIngredient('Tortilla')" class="bg-gray-800 hover:bg-amber-600 hover:text-black text-xs font-semibold px-3 py-2 rounded-lg border border-gray-700 transition cursor-pointer">🫓 Tortilla</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- POZOSTAŁE ZAKŁADKI -->
                 <div id="tab-admin" class="tab-content hidden">
                     <div class="bg-[#11141a] border border-red-900/50 rounded-xl p-6">
                         <div class="flex justify-between items-center mb-6">
@@ -276,7 +291,9 @@
                     </div>
                 </div>
 
-                <div id="tab-dokumenty" class="tab-content hidden"><div class="bg-[#11141a] border border-gray-800 rounded-xl p-10 text-center text-gray-500">Moduł dokumentów w przygotowaniu...</div></div>
+                <div id="tab-dokumenty" class="tab-content hidden">
+                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-10 text-center text-gray-500">Moduł dokumentów w przygotowaniu...</div>
+                </div>
 
             </div>
         </main>
