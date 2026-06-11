@@ -87,7 +87,7 @@
                 <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 text-center mb-8">
                     <div class="relative w-20 h-20 mx-auto mb-3">
                         <img id="side-user-avatar" src="https://i.pravatar.cc/150?img=11" alt="Avatar" class="rounded-full border-2 border-amber-500 object-cover w-full h-full">
-                        <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-[#161a23]"></div>
+                        <div id="side-user-status-dot" class="absolute bottom-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-[#161a23] transition-colors duration-300"></div>
                     </div>
                     <h2 id="side-user-name" class="font-semibold text-sm">Ładowanie...</h2>
                     <p id="side-user-rank" class="text-xs text-amber-500 font-medium mt-1">...</p>
@@ -95,6 +95,7 @@
 
                 <nav class="space-y-2" id="sidebar-nav">
                     <a href="#" data-tab="tab-panel" class="nav-btn nav-active flex items-center gap-3 px-4 py-3 rounded-lg font-medium border transition"><span>👤</span> Profil</a>
+                    <a href="#" data-tab="tab-aktywnosc" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>⏱️</span> Aktywność</a>
                     <a href="#" data-tab="tab-kasa" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>💰</span> Paragony & Kasa</a>
                     <a href="#" data-tab="tab-magazyn" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>📦</span> Magazyn & Kuchnia</a>
                     <a href="#" data-tab="tab-dokumenty" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>📄</span> Dokumenty</a>
@@ -145,6 +146,44 @@
                                 <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">Discord</span>
                                 <span id="user-discord" class="text-base text-gray-400">...</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-aktywnosc" class="tab-content hidden space-y-6">
+                    <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6">
+                        <h3 class="text-lg font-bold text-amber-500 mb-4">⏱️ Rejestracja Czasu Służby</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <button id="btn-work-start" class="bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-black border border-green-500/30 font-semibold p-4 rounded-xl transition flex flex-col items-center justify-center gap-2 cursor-pointer">
+                                <span class="text-xl">▶️</span> Wejdź na służbę (Praca)
+                            </button>
+                            <button id="btn-work-break" class="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 font-semibold p-4 rounded-xl transition flex flex-col items-center justify-center gap-2 cursor-pointer">
+                                <span class="text-xl">⏸️</span> Wyjdź na przerwę
+                            </button>
+                            <button id="btn-work-end" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-black border border-red-500/30 font-semibold p-4 rounded-xl transition flex flex-col items-center justify-center gap-2 cursor-pointer">
+                                <span class="text-xl">⏹️</span> Zakończ służbę (Koniec)
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800">
+                                <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">Aktualny Status</span>
+                                <span id="work-status-text" class="text-base font-bold text-red-500">Poza Służbą</span>
+                            </div>
+                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800">
+                                <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">Czas obecnej sesji</span>
+                                <span id="work-session-timer" class="text-base font-mono text-amber-500 font-bold">00:00:00</span>
+                            </div>
+                            <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800">
+                                <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">Suma minut dzisiaj</span>
+                                <span id="work-total-today" class="text-base font-mono text-gray-300 font-bold">0 min</span>
+                            </div>
+                        </div>
+
+                        <h4 class="text-sm font-semibold uppercase text-gray-400 mb-3">Twoja Dzisiejsza Historia Zmian</h4>
+                        <div class="bg-[#161a23] rounded-lg border border-gray-800 p-2 overflow-y-auto max-h-60" id="work-history-list">
+                            <p class="text-xs text-gray-500 text-center p-4">Brak wpisów dla obecnej sesji.</p>
                         </div>
                     </div>
                 </div>
