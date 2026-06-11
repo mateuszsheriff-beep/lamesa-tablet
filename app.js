@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupReceipts();
     setupWarehouse();
     setupAvatarUpload();
+    setupDutyPanel(); // Podpięta obsługa przycisków służby
 });
 
 function setupAuthUI() {
@@ -70,7 +71,7 @@ function setupLogin() {
 
         try {
             if (idInput === "001" && passInput === "zarzad") {
-                CurrentUser = { badge: "001", fullname: "Zarząd U BCSO", rank: "Szeryf (Zarząd)", discord: "szeryf_bcso", is_admin: true, avatar_url: null };
+                CurrentUser = { badge: "001", fullname: "Zarząd", rank: "Szef (Zarząd)", discord: "szef_rp", is_admin: true, avatar_url: null };
                 loginSuccess();
                 return;
             }
@@ -94,7 +95,7 @@ function setupLogin() {
 
             CurrentUser = { 
                 ...data, 
-                is_admin: (data.rank.toLowerCase().includes('zarząd') || data.rank.toLowerCase().includes('szeryf')) 
+                is_admin: (data.rank.toLowerCase().includes('zarząd') || data.rank.toLowerCase().includes('szef')) 
             };
             loginSuccess();
 
@@ -163,7 +164,7 @@ function setupRegistration() {
 
         try {
             const { error } = await supabaseClient.from('cartel_users').insert([
-                { badge: badge, password: pass, fullname: name, discord: discord, is_approved: false, rank: "Kadet" }
+                { badge: badge, password: pass, fullname: name, discord: discord, is_approved: false, rank: "Praktykant" }
             ]);
 
             if (error) throw error;
@@ -338,7 +339,6 @@ window.fetchReceipts = async function() {
         `).join('');
 
     } catch (err) {
-        // TUTAJ BYŁ BŁĄD - Zamieniono apostrof na poprawny backtick na końcu:
         container.innerHTML = `<p class="text-xs text-red-400 p-2">Błąd ładowania: ${err.message}</p>`;
     }
 };
@@ -594,5 +594,50 @@ function renderPlayerPlate() {
             el.innerText = item;
             plate.appendChild(el);
         });
+    }
+}
+
+// ==========================================
+// LOGIKA PANELU SŁUŻBY (MDT)
+// ==========================================
+function setupDutyPanel() {
+    const btnStart = document.getElementById("duty-start-btn");
+    const btnBreak = document.getElementById("duty-break-btn");
+    const btnEnd = document.getElementById("duty-end-btn");
+    
+    const statusDisplay = document.getElementById("current-duty-status");
+
+    if (!btnStart || !btnBreak || !btnEnd) {
+        console.warn("Brak przycisków służby w HTML. Sprawdź ich ID.");
+        return;
+    }
+
+    btnStart.addEventListener("click", () => {
+        if (!CurrentUser) {
+            alert("Musisz być zalogowany, aby wejść na służbę!");
+            return;
+        }
+        updateDutyStatus("ON-DUTY", "text-green-500");
+        alert("Rozpocząłeś służbę. Powodzenia!");
+    });
+
+    btnBreak.addEventListener("click", () => {
+        if (!CurrentUser) return;
+        updateDutyStatus("PRZERWA", "text-amber-500");
+        alert("Zszedłeś na przerwę.");
+    });
+
+    btnEnd.addEventListener("click", () => {
+        if (!CurrentUser) return;
+        updateDutyStatus("OFF-DUTY", "text-red-500");
+        alert("Zakończyłeś służbę. Dobra robota!");
+    });
+
+    function updateDutyStatus(statusText, colorClass) {
+        if (statusDisplay) {
+            statusDisplay.innerText = statusText;
+            statusDisplay.className = `font-bold ${colorClass}`;
+        }
+        console.log(`[System] Zmiana statusu pracownika ${CurrentUser?.badge}: ${statusText}`);
     }
 }
