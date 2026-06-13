@@ -1,345 +1,270 @@
 // ==========================================
-// KONFIGURACJA SUPABASE (Pamiętaj o podmianie!)
+// 1. KONFIGURACJA SUPABASE (UZUPEŁNIJ KLUCZE)
 // ==========================================
-const supabaseUrl = 'TWOJ_URL_SUPABASE'; 
-const supabaseKey = 'TWOJ_KLUCZ_ANON';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+const SUPABASE_URL = '"https://azficflfpvvntuufjfne.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6ZmljZmxmcHZ2bnR1dWZqZm5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NzY5ODAsImV4cCI6MjA5NjE1Mjk4MH0';
 
-let CurrentUser = null;
-
-document.addEventListener("DOMContentLoaded", () => {
-    setupLogin();
-    setupNavigation();
-    setupReceipts();
-    setupInvoiceToggle();
-    setupWarehouse();     // PRZYWRÓCONE
-    setupAvatarUpload();  // PRZYWRÓCONE
-    
-    const savedUser = localStorage.getItem('mdt_user');
-    if (savedUser) {
-        try {
-            CurrentUser = JSON.parse(savedUser);
-            loginSuccess();
-        } catch (e) {
-            localStorage.removeItem('mdt_user');
-        }
-    }
-});
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==========================================
-// LOGOWANIE
+// 2. STAN APLIKACJI
 // ==========================================
-function setupLogin() {
-    const loginForm = document.getElementById('login-form');
-    if (!loginForm) return;
-
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fullname = document.getElementById('login-fullname').value.trim();
-        
-        CurrentUser = { fullname: fullname, role: 'Pracownik' };
-        localStorage.setItem('mdt_user', JSON.stringify(CurrentUser));
-        loginSuccess();
-    });
-}
-
-function loginSuccess() {
-    document.getElementById('auth-screen').classList.add('hidden');
-    document.getElementById('app-screen').classList.remove('hidden');
-    
-    document.getElementById('sidebar-username').innerText = CurrentUser.fullname;
-    document.getElementById('sidebar-role').innerText = CurrentUser.role;
-
-    // Ładowanie zapisanego awatara
-    const savedAvatar = localStorage.getItem(`avatar_${CurrentUser.fullname}`);
-    if (savedAvatar) {
-        document.getElementById('profile-avatar').src = savedAvatar;
-        document.getElementById('profile-avatar').classList.remove('hidden');
-    }
-
-    fetchReceipts();
-    fetchUserStats();
-    fetchWarehouse(); // Ładowanie magazynu
-}
-
-window.logout = function() {
-    CurrentUser = null;
-    localStorage.removeItem('mdt_user');
-    document.getElementById('auth-screen').classList.remove('hidden');
-    document.getElementById('app-screen').classList.add('hidden');
-}
+let currentUser = null; // Przechowuje zalogowanego użytkownika
 
 // ==========================================
-// NAWIGACJA
+// 3. INICJALIZACJA I UI
 // ==========================================
-function setupNavigation() {
+document.addEventListener('DOMContentLoaded', () => {
+    // Nawigacja - Przełączanie kart w menu bocznym
     const navButtons = document.querySelectorAll('.nav-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
     navButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Reset stylów przycisków
             navButtons.forEach(b => {
-                b.classList.remove('bg-gray-800/50', 'text-amber-500', 'border', 'border-gray-700');
-                b.classList.add('text-gray-400');
+                b.classList.remove('nav-active');
+                b.classList.add('nav-inactive');
             });
-            btn.classList.add('bg-gray-800/50', 'text-amber-500', 'border', 'border-gray-700');
-            btn.classList.remove('text-gray-400');
+            // Aktywacja klikniętego przycisku
+            btn.classList.add('nav-active');
+            btn.classList.remove('nav-inactive');
 
+            // Ukrycie wszystkich kart
             tabContents.forEach(tab => tab.classList.add('hidden'));
-            const targetTab = document.getElementById(btn.getAttribute('data-tab'));
-            if (targetTab) targetTab.classList.remove('hidden');
+            
+            // Pokaż wybraną kartę
+            const targetId = btn.getAttribute('data-tab');
+            document.getElementById(targetId).classList.remove('hidden');
         });
     });
-}
 
-// ==========================================
-// AWATAR (Przywrócone)
-// ==========================================
-function setupAvatarUpload() {
-    const avatarInput = document.getElementById('avatar-upload');
-    const avatarImg = document.getElementById('profile-avatar');
-
-    if(!avatarInput) return;
-
-    avatarInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file && CurrentUser) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const base64String = event.target.result;
-                avatarImg.src = base64String;
-                avatarImg.classList.remove('hidden');
-                localStorage.setItem(`avatar_${CurrentUser.fullname}`, base64String);
-            };
-            reader.readAsDataURL(file);
-        }
+    // Toggle Login/Register
+    document.getElementById('show-register-btn').addEventListener('click', () => {
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('register-form').classList.remove('hidden');
+        document.getElementById('auth-subtitle').innerText = "Wniosek o dostęp";
     });
-}
 
-// ==========================================
-// KASA & PARAGONY
-// ==========================================
-function setupInvoiceToggle() {
-    const docTypeSelect = document.getElementById("receipt-doc-type");
-    const invoiceBlock = document.getElementById("invoice-details-block");
-    const invoiceInput = document.getElementById("receipt-invoice-data");
+    document.getElementById('show-login-btn').addEventListener('click', () => {
+        document.getElementById('register-form').classList.add('hidden');
+        document.getElementById('login-form').classList.remove('hidden');
+        document.getElementById('auth-subtitle').innerText = "Zaloguj się do systemu";
+    });
 
-    if(!docTypeSelect) return;
-
-    docTypeSelect.addEventListener("change", () => {
-        if (docTypeSelect.value === "Faktura") {
-            invoiceBlock.classList.remove("hidden");
+    // Pokaż/Ukryj pole "Dane do faktury" w Kasię
+    document.getElementById('receipt-doc-type').addEventListener('change', function(e) {
+        const invoiceBlock = document.getElementById('invoice-data-block');
+        const invoiceInput = document.getElementById('receipt-invoice-data');
+        
+        if (e.target.value === 'Faktura') {
+            invoiceBlock.classList.remove('hidden');
             invoiceInput.required = true;
         } else {
-            invoiceBlock.classList.add("hidden");
+            invoiceBlock.classList.add('hidden');
             invoiceInput.required = false;
-            invoiceInput.value = "";
+            invoiceInput.value = ''; // Czyszczenie
         }
     });
-}
 
-function setupReceipts() {
-    const form = document.getElementById("receipt-form");
-    const btn = document.getElementById("receipt-btn");
-    const dishSelect = document.getElementById("receipt-dish-select");
-    const customBlock = document.getElementById("custom-dish-block");
-
-    if (!form) return;
-
-    dishSelect.addEventListener("change", () => {
-        if (dishSelect.value === "CUSTOM") {
-            customBlock.classList.remove("hidden");
-            document.getElementById("receipt-custom-products").required = true;
+    // Customowe danie w Kasię
+    document.getElementById('receipt-dish-select').addEventListener('change', function(e) {
+        const customBlock = document.getElementById('custom-dish-block');
+        const customInput = document.getElementById('receipt-custom-products');
+        if (e.target.value === 'CUSTOM') {
+            customBlock.classList.remove('hidden');
+            customInput.required = true;
         } else {
-            customBlock.classList.add("hidden");
-            document.getElementById("receipt-custom-products").required = false;
+            customBlock.classList.add('hidden');
+            customInput.required = false;
+            customInput.value = '';
         }
     });
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    // Odpięcie akcji logowania i wylogowania (na ten moment symulacja wejścia)
+    document.getElementById('login-form').addEventListener('submit', handleLogin);
+    document.getElementById('logout-btn').addEventListener('click', handleLogout);
+    
+    // Wystawianie dokumentu
+    document.getElementById('receipt-form').addEventListener('submit', handleReceiptSubmit);
+});
+
+// ==========================================
+// 4. LOGOWANIE (SYMULACJA / SUPABASE AUTH)
+// ==========================================
+async function handleLogin(e) {
+    e.preventDefault();
+    const loginId = document.getElementById('login-id').value;
+    
+    // Zastąp to docelowo prawdziwym logowaniem przez Supabase. 
+    // Tymczasowo symulujemy poprawne logowanie dla celów testowych:
+    currentUser = {
+        id: 'user-1234', // Unikalne ID uzytkownika
+        name: 'Pracownik Testowy',
+        badge: loginId,
+        discord: 'pracownik#0001',
+        is_admin: false // Jeśli true, pokażemy tablicę zarządu
+    };
+
+    // Wypełnij dane w UI
+    document.getElementById('user-fullname').innerText = currentUser.name;
+    document.getElementById('side-user-name').innerText = currentUser.name;
+    document.getElementById('user-badge').innerText = currentUser.badge;
+    document.getElementById('user-discord').innerText = currentUser.discord;
+
+    if (currentUser.is_admin) {
+        document.getElementById('nav-admin').classList.remove('hidden');
+    }
+
+    // Przełącz widok
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+
+    // Pobierz dane na start
+    fetchReceipts();
+    fetchActivityStats();
+}
+
+function handleLogout() {
+    currentUser = null;
+    document.getElementById('main-app').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('login-form').reset();
+}
+
+// ==========================================
+// 5. OBSŁUGA DOKUMENTÓW (PARAGONY/FAKTURY)
+// ==========================================
+async function handleReceiptSubmit(e) {
+    e.preventDefault();
+
+    const discord = document.getElementById('receipt-discord').value;
+    const amount = document.getElementById('receipt-amount').value;
+    const docType = document.getElementById('receipt-doc-type').value;
+    const paymentMethod = document.getElementById('receipt-payment-method').value;
+    const invoiceData = document.getElementById('receipt-invoice-data').value;
+    
+    // Wyciągnięcie nazwy dania
+    const dishSelect = document.getElementById('receipt-dish-select').value;
+    let productName = dishSelect;
+    if (dishSelect === 'CUSTOM') {
+        productName = document.getElementById('receipt-custom-products').value;
+    }
+
+    // WYSYŁKA DO BAZY
+    const { error } = await supabase
+        .from('receipts')
+        .insert([{
+            user_id: currentUser.id,
+            discord: discord,
+            amount: parseFloat(amount),
+            doc_type: docType,
+            payment_method: paymentMethod,
+            invoice_data: docType === 'Faktura' ? invoiceData : null,
+            product_name: productName
+        }]);
+
+    if (error) {
+        console.error('Błąd zapisu:', error);
+        alert('Wystąpił błąd przy zapisie dokumentu w bazie.');
+    } else {
+        alert(`${docType} wystawiono pomyślnie!`);
         
-        const amount = parseInt(document.getElementById("receipt-amount").value, 10);
-        if (isNaN(amount) || amount <= 0) { alert("Wprowadź poprawną kwotę!"); return; }
+        // Reset formularza
+        document.getElementById('receipt-form').reset();
+        document.getElementById('invoice-data-block').classList.add('hidden');
+        document.getElementById('custom-dish-block').classList.add('hidden');
 
-        btn.disabled = true;
-        btn.innerText = "Zapisywanie...";
+        // Odświeżenie widoków
+        fetchReceipts();
+        fetchActivityStats();
+    }
+}
 
-        const clientDiscord = document.getElementById("receipt-discord").value.trim();
-        const paymentMethod = document.getElementById("receipt-payment").value;
-        const docType = document.getElementById("receipt-doc-type").value;
-        const invoiceData = document.getElementById("receipt-invoice-data").value.trim();
-        
-        let finalProduct = dishSelect.value === "CUSTOM" ? document.getElementById("receipt-custom-products").value.trim() : dishSelect.value;
-        if (!finalProduct) { alert("Wybierz danie!"); btn.disabled = false; return; }
+// ==========================================
+// 6. POBIERANIE DANYCH Z BAZY
+// ==========================================
+async function fetchReceipts() {
+    const listDiv = document.getElementById('receipts-list');
+    listDiv.innerHTML = '<p class="text-sm text-gray-500 text-center p-4">Ładowanie...</p>';
 
-        try {
-            const { error } = await supabaseClient.from('cartel_paragony').insert([{ 
-                seller_name: CurrentUser.fullname, 
-                client_discord: clientDiscord, 
-                products: finalProduct, 
-                amount: amount,
-                payment_method: paymentMethod,
-                document_type: docType,
-                invoice_details: docType === "Faktura" ? invoiceData : null
-            }]);
+    const { data, error } = await supabase
+        .from('receipts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-            if (error) throw error;
-            
-            alert(`Zapisano pomyślnie ${docType}!`);
-            form.reset();
-            customBlock.classList.add("hidden");
-            document.getElementById("invoice-details-block").classList.add("hidden");
-            
-            fetchReceipts();
-            fetchUserStats(); 
-        } catch (err) {
-            alert("Błąd zapisu: " + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Zapisz w księgach";
-        }
+    if (error) {
+        listDiv.innerHTML = '<p class="text-sm text-red-500 p-2">Błąd pobierania danych.</p>';
+        console.error(error);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        listDiv.innerHTML = '<p class="text-sm text-gray-500 text-center p-4">Brak transakcji w bazie.</p>';
+        return;
+    }
+
+    listDiv.innerHTML = '';
+    data.forEach(doc => {
+        // Wybór ikonki płatności
+        let paymentIcon = '💵';
+        if(doc.payment_method === 'Karta') paymentIcon = '💳';
+        else if(doc.payment_method === 'Przelew') paymentIcon = '🏦';
+
+        // Wybór odznaki (Paragon vs Faktura)
+        let docBadge = doc.doc_type === 'Faktura' 
+            ? `<span class="bg-blue-900/40 text-blue-400 border border-blue-800/50 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">📄 Faktura: ${doc.invoice_data}</span>`
+            : `<span class="bg-gray-800 text-gray-300 border border-gray-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">🧾 Paragon</span>`;
+
+        // Format daty
+        const dateObj = new Date(doc.created_at);
+        const dateStr = `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`;
+
+        listDiv.innerHTML += `
+            <div class="bg-[#11141a] p-3 rounded-lg border border-gray-800 mb-2 flex justify-between items-center hover:bg-[#161a23] transition">
+                <div>
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <span class="text-sm font-bold text-gray-200">${doc.discord}</span>
+                        ${docBadge}
+                    </div>
+                    <div class="text-[11px] text-gray-500 font-medium">
+                        Towar: <span class="text-amber-500 mr-2">${doc.product_name || 'Brak'}</span>
+                        Płatność: <span class="text-gray-300 mr-2">${paymentIcon} ${doc.payment_method}</span>
+                        <span class="text-gray-600">${dateStr}</span>
+                    </div>
+                </div>
+                <div class="text-amber-500 font-mono font-bold text-base bg-amber-500/10 px-3 py-1 rounded border border-amber-500/20">
+                    $${doc.amount}
+                </div>
+            </div>
+        `;
     });
 }
 
-window.fetchReceipts = async function() {
-    const container = document.getElementById("receipts-list");
-    if (!container) return;
+async function fetchActivityStats() {
+    if (!currentUser) return;
 
-    try {
-        const { data, error } = await supabaseClient.from('cartel_paragony').select('*').order('created_at', { ascending: false }).limit(30);
-        if (error) throw error;
+    // Pobranie ogólnej liczby dokumentów (Wszystkie) wystawionych przez pracownika
+    const { count: totalCount, error: errTotal } = await supabase
+        .from('receipts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id);
 
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p class="text-xs text-gray-500 text-center p-4">Brak zarejestrowanych transakcji.</p>';
-            return;
-        }
+    // Pobranie liczby z DZISIAJ
+    const dzisiaj = new Date();
+    dzisiaj.setHours(0, 0, 0, 0); // Ustawienie od północy dzisiejszego dnia
 
-        container.innerHTML = data.map(item => {
-            let dateDisplay = "";
-            if (item.created_at) {
-                const d = new Date(item.created_at);
-                if (!isNaN(d.getTime())) dateDisplay = ` | 🕒 ${d.toLocaleDateString('pl-PL')} ${d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}`;
-            }
+    const { count: todayCount, error: errToday } = await supabase
+        .from('receipts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id)
+        .gte('created_at', dzisiaj.toISOString());
 
-            const isInvoice = item.document_type === "Faktura";
-            const docBadge = isInvoice 
-                ? `<span class="bg-blue-900/40 text-blue-400 border border-blue-700 px-1.5 py-0.5 rounded text-[10px] ml-2 uppercase">📄 Faktura</span>` 
-                : `<span class="bg-gray-800 text-gray-300 border border-gray-600 px-1.5 py-0.5 rounded text-[10px] ml-2 uppercase">🧾 Paragon</span>`;
-            
-            let payIcon = "💵";
-            if(item.payment_method === "Karta") payIcon = "💳";
-            if(item.payment_method === "Przelew") payIcon = "🏦";
-
-            const invoiceDetailsHtml = isInvoice && item.invoice_details 
-                ? `<div class="mt-1.5 bg-[#0b0c10] border border-blue-900/30 p-2 rounded text-[10px] text-gray-400"><span class="text-blue-500 font-semibold">Dane nabywcy:</span> ${item.invoice_details}</div>` : '';
-
-            return `
-            <div class="bg-[#11141a] p-3 rounded-lg mb-2 border ${isInvoice ? 'border-blue-900/30' : 'border-gray-800'} text-xs flex justify-between items-center">
-                <div class="flex-1">
-                    <p class="font-bold text-amber-400 mb-0.5 flex items-center">${item.products} ${docBadge}</p>
-                    <p class="text-gray-500">Sprzedawca: <span class="text-gray-300">${item.seller_name}</span> | Klient: <span class="text-amber-500/70">@${item.client_discord}</span> <span class="text-gray-600 font-mono">${dateDisplay}</span></p>
-                    ${invoiceDetailsHtml}
-                </div>
-                <div class="text-right ml-4">
-                    <div class="font-mono font-bold text-green-400 text-sm">$${item.amount.toLocaleString()}</div>
-                    <div class="text-[10px] text-gray-500 mt-1" title="Metoda płatności: ${item.payment_method}">${payIcon} ${item.payment_method || 'Gotówka'}</div>
-                </div>
-            </div>`;
-        }).join('');
-    } catch (err) {
-        container.innerHTML = `<p class="text-xs text-red-400 p-2">Błąd ładowania: ${err.message}</p>`;
+    if (!errTotal && !errToday) {
+        // Animacja liczników (Opcjonalnie dla lepszego efektu, ale tu wstawiamy na sztywno)
+        document.getElementById('activity-total-count').innerText = totalCount || 0;
+        document.getElementById('activity-today-count').innerText = todayCount || 0;
     }
-};
-
-window.fetchUserStats = async function() {
-    const countDisplay = document.getElementById("user-receipt-count");
-    if (!countDisplay || !CurrentUser) return;
-
-    try {
-        const { count, error } = await supabaseClient.from('cartel_paragony').select('*', { count: 'exact', head: true }).eq('seller_name', CurrentUser.fullname);
-        if (error) throw error;
-        countDisplay.innerText = count || 0;
-    } catch (err) {
-        console.error("Błąd ładowania statystyk:", err);
-        countDisplay.innerText = "Err";
-    }
-};
-
-// ==========================================
-// MAGAZYN (Przywrócone)
-// ==========================================
-function setupWarehouse() {
-    const form = document.getElementById("warehouse-form");
-    const btn = document.getElementById("warehouse-btn");
-
-    if (!form) return;
-
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        btn.disabled = true;
-        btn.innerText = "Zapisywanie...";
-
-        const item = document.getElementById("warehouse-item").value.trim();
-        const amount = document.getElementById("warehouse-amount").value;
-        const receiver = document.getElementById("warehouse-discord").value.trim();
-
-        try {
-            // Zakładam, że Twoja tabela do magazynu to 'cartel_magazyn' (jeśli nazywa się inaczej, popraw tutaj)
-            const { error } = await supabaseClient.from('cartel_magazyn').insert([{ 
-                issuer_name: CurrentUser.fullname, 
-                item_name: item, 
-                amount: amount, 
-                receiver_discord: receiver 
-            }]);
-
-            if (error) throw error;
-            
-            alert("Pomyślnie wydano towar!");
-            form.reset();
-            fetchWarehouse();
-        } catch (err) {
-            alert("Błąd zapisu w magazynie: " + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Wydaj Towar";
-        }
-    });
 }
-
-window.fetchWarehouse = async function() {
-    const container = document.getElementById("warehouse-list");
-    if (!container) return;
-
-    try {
-        // Tabela z magazynem (zmień nazwę jeśli masz inną w bazie)
-        const { data, error } = await supabaseClient.from('cartel_magazyn').select('*').order('created_at', { ascending: false }).limit(30);
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p class="text-xs text-gray-500 text-center p-4">Brak wydanych towarów.</p>';
-            return;
-        }
-
-        container.innerHTML = data.map(entry => {
-            let dateDisplay = "";
-            if (entry.created_at) {
-                const d = new Date(entry.created_at);
-                if (!isNaN(d.getTime())) dateDisplay = `${d.toLocaleDateString('pl-PL')} ${d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}`;
-            }
-
-            return `
-            <div class="bg-[#11141a] p-3 rounded-lg mb-2 border border-gray-800 text-xs">
-                <div class="flex justify-between mb-1">
-                    <span class="font-bold text-amber-400">${entry.item_name} (x${entry.amount})</span>
-                    <span class="text-gray-500">${dateDisplay}</span>
-                </div>
-                <div class="text-gray-400">
-                    Wydający: <span class="text-gray-200">${entry.issuer_name}</span> ➔ Odbiorca: <span class="text-amber-500/70">@${entry.receiver_discord}</span>
-                </div>
-            </div>`;
-        }).join('');
-    } catch (err) {
-        container.innerHTML = `<p class="text-xs text-red-400 p-2">Błąd ładowania: ${err.message}</p>`;
-    }
-};
