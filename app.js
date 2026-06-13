@@ -5,14 +5,14 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let CurrentUser = null;
-let localInventory = {}; // Podgląd magazynu w pamięci podręcznej strony
+let localInventory = {}; 
 
 // STAN GLOBALNY MINIGRY KULINARNEJ
 let currentGameType = null;
 let currentRecipeTarget = []; 
 let currentPlayerStack = [];  
 let currentDbRequirements = {}; 
-let isProcessingMinigame = false; // Zabezpieczenie przed podwójnym zapisem w bazie
+let isProcessingMinigame = false; 
 
 document.addEventListener("DOMContentLoaded", () => {
     setupAuthUI();
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupReceipts();
     setupWarehouse();
     setupAvatarUpload();
-    setupDutyPanel(); // Podpięta obsługa przycisków służby
+    setupDutyPanel(); 
 });
 
 function setupAuthUI() {
@@ -145,7 +145,7 @@ function loginSuccess() {
 
     fetchReceipts();
     fetchInventory();
-    fetchActivityStats(); // Pobieranie liczników po zalogowaniu
+    fetchActivityStats(); 
 }
 
 // Rejestracja
@@ -245,7 +245,7 @@ function setupAvatarUpload() {
     });
 }
 
-// Paragony, Faktury & Kasa
+// Paragony, Faktury & Kalkulator Kasy
 function setupReceipts() {
     const form = document.getElementById("receipt-form");
     const btn = document.getElementById("receipt-btn");
@@ -254,8 +254,39 @@ function setupReceipts() {
     const docTypeSelect = document.getElementById('receipt-doc-type');
     const invoiceBlock = document.getElementById('invoice-data-block');
     const invoiceInput = document.getElementById('receipt-invoice-data');
+    
+    // Pola kalkulatora reszty
+    const amountInputNode = document.getElementById("receipt-amount");
+    const givenInputNode = document.getElementById("receipt-given");
+    const changeInputNode = document.getElementById("receipt-change");
 
     if (!form) return;
+
+    // Kalkulator wpłaty i reszty (działa w czasie rzeczywistym)
+    function calculateChange() {
+        if (!amountInputNode || !givenInputNode || !changeInputNode) return;
+        
+        const total = parseInt(amountInputNode.value, 10) || 0;
+        const given = parseInt(givenInputNode.value, 10) || 0;
+        
+        if (given > 0 && given >= total && total > 0) {
+            const change = given - total;
+            changeInputNode.value = "$" + change.toLocaleString();
+            changeInputNode.classList.remove("text-red-500");
+            changeInputNode.classList.add("text-amber-500");
+        } else if (given > 0 && given < total) {
+            changeInputNode.value = "Za mało!";
+            changeInputNode.classList.remove("text-amber-500");
+            changeInputNode.classList.add("text-red-500");
+        } else {
+            changeInputNode.value = "$0";
+            changeInputNode.classList.remove("text-red-500");
+            changeInputNode.classList.add("text-amber-500");
+        }
+    }
+
+    if (amountInputNode) amountInputNode.addEventListener("input", calculateChange);
+    if (givenInputNode) givenInputNode.addEventListener("input", calculateChange);
 
     // Customowe danie
     dishSelect.addEventListener("change", () => {
@@ -330,10 +361,18 @@ function setupReceipts() {
             
             alert(`Zapisano pomyślnie dokument (${docType})!`);
             form.reset();
+            
+            // Reset kalkulatora po wysłaniu formularza
+            if (changeInputNode) {
+                changeInputNode.value = "$0";
+                changeInputNode.classList.remove("text-red-500");
+                changeInputNode.classList.add("text-amber-500");
+            }
+
             customBlock.classList.add("hidden");
             if(invoiceBlock) invoiceBlock.classList.add("hidden");
             fetchReceipts();
-            fetchActivityStats(); // Odśwież zakładkę Aktywność po dodaniu paragonu
+            fetchActivityStats(); 
         } catch (err) {
             alert("Błąd zapisu dokumentu: " + err.message);
         } finally {
@@ -369,13 +408,11 @@ window.fetchReceipts = async function() {
                 dateString = dateObj.toLocaleDateString('pl-PL') + ' ' + dateObj.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
             }
 
-            // Rozpoznawanie typu płatności (zabezpieczenie jeśli starsze wpisy nie mają formy)
             let paymentIcon = '💵';
             let pMethod = item.payment_method || 'Gotówka';
             if(pMethod === 'Karta') paymentIcon = '💳';
             else if(pMethod === 'Przelew') paymentIcon = '🏦';
 
-            // Odznaka Paragon / Faktura
             let docBadge = (item.doc_type === 'Faktura') 
                 ? `<span class="bg-blue-900/40 text-blue-400 border border-blue-800/50 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">📄 Faktura: ${item.invoice_data || 'Brak NIP'}</span>`
                 : `<span class="bg-gray-800 text-gray-300 border border-gray-700 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">🧾 Paragon</span>`;
@@ -406,18 +443,16 @@ window.fetchReceipts = async function() {
     }
 };
 
-// NOWE: Statystyki Aktywności (Zliczanie dokumentów)
+// Statystyki Aktywności 
 window.fetchActivityStats = async function() {
     if (!CurrentUser) return;
 
     try {
-        // Liczenie całościowe (Wszystkie wystawione przez aktualnego użytkownika)
         const { count: totalCount, error: errTotal } = await supabaseClient
             .from('cartel_paragony')
             .select('*', { count: 'exact', head: true })
             .eq('seller_name', CurrentUser.fullname);
 
-        // Liczenie od północy (Dzisiaj)
         const dzisiaj = new Date();
         dzisiaj.setHours(0, 0, 0, 0);
 
@@ -439,7 +474,7 @@ window.fetchActivityStats = async function() {
     }
 };
 
-// Magazyn - Panel Zarządzania (Zarząd)
+// Magazyn 
 function setupWarehouse() {
     const form = document.getElementById("warehouse-add-form");
     if (!form) return;
@@ -474,7 +509,6 @@ function setupWarehouse() {
     });
 }
 
-// Magazyn - Pobieranie stanu zapasów
 window.fetchInventory = async function() {
     const container = document.getElementById("inventory-list");
     if (!container) return;
@@ -505,7 +539,7 @@ window.fetchInventory = async function() {
     }
 };
 
-// Panel Admina - Zatwierdzanie użytkowników
+// Panel Admina
 window.fetchPendingUsers = async function() {
     const container = document.getElementById("pending-users-list");
     if (!container) return;
@@ -589,7 +623,6 @@ window.startCookingMinigame = function(dishType) {
         document.getElementById("mg-dish-name").innerText = "Sałatka Wege";
     }
 
-    // Walidacja surowców na starcie gry
     for (const [ingredient, neededQty] of Object.entries(currentDbRequirements)) {
         const available = localInventory[ingredient] || 0;
         if (available < neededQty) {
