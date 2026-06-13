@@ -222,19 +222,33 @@
                                 <input type="number" id="receipt-amount" required placeholder="15000" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-amber-500 font-mono">
                             </div>
                             <button type="submit" id="receipt-btn" class="w-full bg-amber-600 text-black font-semibold text-sm px-4 py-2 rounded-lg hover:bg-amber-500 transition mt-2 cursor-pointer">
-                                <!-- Obecne pole z kwotą do zapłaty (upewnij się, że ma id="receipt-amount") -->
-<label class="block text-xs font-medium text-gray-400 mb-1">Kwota do zapłaty ($)</label>
-<input type="number" id="receipt-amount" class="w-full bg-[#11141a] text-gray-200 border border-gray-700 rounded p-2 mb-3" required placeholder="np. 500">
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Nick Discord Klienta</label>
+<input type="text" id="receipt-discord" class="w-full bg-[#1a1e27] text-white border border-gray-600 rounded p-2 mb-3 focus:border-amber-500 focus:outline-none" required placeholder="np. aurav1000">
 
-<!-- NOWE POLA: Wpłacona kwota i Reszta -->
-<div class="flex gap-2 mb-3">
+<label class="block text-xs font-medium text-gray-400 mb-1">Wybierz gotowe danie</label>
+<select id="receipt-dish-select" class="w-full bg-[#1a1e27] text-white border border-gray-600 rounded p-2 mb-3 focus:border-amber-500 focus:outline-none">
+    <option value="">-- Wybierz --</option>
+    <option value="Burger Klasyczny">Burger Klasyczny ($15)</option>
+    <option value="Taco Meksykańskie">Taco Meksykańskie ($12)</option>
+    <option value="CUSTOM">Inne / Własne danie (wpisz poniżej)</option>
+</select>
+
+<div id="custom-dish-block" class="hidden mb-3">
+    <label class="block text-xs font-medium text-amber-500 mb-1">Wpisz własną nazwę dania/towaru</label>
+    <input type="text" id="receipt-custom-products" class="w-full bg-[#1a1e27] text-white border border-gray-600 rounded p-2 focus:border-amber-500 focus:outline-none" placeholder="np. Zestaw VIP">
+</div>
+
+<label class="block text-xs font-medium text-gray-400 mb-1">Kwota transakcji ($)</label>
+<input type="number" id="receipt-amount" class="w-full bg-[#1a1e27] text-white border border-gray-600 rounded p-2 mb-3 focus:border-amber-500 focus:outline-none" required placeholder="np. 100">
+
+<div class="flex gap-2 mb-4">
     <div class="w-1/2">
         <label class="block text-xs font-medium text-gray-400 mb-1">Otrzymano ($)</label>
-        <input type="number" id="receipt-given" class="w-full bg-[#11141a] text-gray-200 border border-gray-700 rounded p-2" placeholder="np. 1000">
+        <input type="number" id="receipt-given" class="w-full bg-[#1a1e27] text-white border border-gray-600 rounded p-2 focus:border-amber-500 focus:outline-none" placeholder="np. 200">
     </div>
     <div class="w-1/2">
         <label class="block text-xs font-medium text-amber-500 mb-1">Reszta do wydania</label>
-        <input type="text" id="receipt-change" class="w-full bg-[#161a23] text-amber-500 font-bold border border-gray-700 rounded p-2" readonly placeholder="$0">
+        <input type="text" id="receipt-change" class="w-full bg-[#11141a] text-amber-500 font-bold border border-gray-700 rounded p-2" readonly placeholder="$0">
     </div>
 </div>
                                 Zapisz w księgach
