@@ -19,7 +19,6 @@
 </head>
 <body class="text-gray-200 min-h-screen">
 
-    <!-- EKRAN LOGOWANIA -->
     <div id="login-screen" class="min-h-screen flex items-center justify-center bg-[#0b0c10] p-4">
         <div class="bg-[#11141a] border border-gray-800 rounded-2xl p-8 w-full max-w-md shadow-2xl shadow-black relative overflow-hidden">
             <div class="text-center mb-8">
@@ -31,11 +30,11 @@
             <form id="login-form" class="space-y-5">
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Numer pracownika (ID)</label>
-                    <input type="text" id="login-id" required placeholder="Np. 001" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:border-amber-500 text-amber-500 font-mono outline-none">
+                    <input type="text" id="login-id" required placeholder="Np. 001" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:border-amber-500 text-amber-500 font-mono">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Hasło dostępu</label>
-                    <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:border-amber-500 text-gray-200 outline-none">
+                    <input type="password" id="login-pass" required placeholder="••••••••" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-3 text-sm focus:border-amber-500 text-gray-200">
                 </div>
                 <button type="submit" id="login-btn" class="w-full bg-gradient-to-r from-amber-600 to-amber-500 text-black font-semibold text-sm px-6 py-3 rounded-lg hover:from-amber-500 hover:to-yellow-400 transition shadow-lg cursor-pointer">
                     Autoryzuj dostęp
@@ -48,21 +47,21 @@
             <form id="register-form" class="space-y-4 hidden">
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Imię i Nazwisko</label>
-                    <input type="text" id="reg-name" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200 outline-none focus:border-amber-500">
+                    <input type="text" id="reg-name" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Numer ID</label>
-                        <input type="text" id="reg-id" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200 outline-none focus:border-amber-500">
+                        <input type="text" id="reg-id" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Discord</label>
-                        <input type="text" id="reg-discord" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200 outline-none focus:border-amber-500">
+                        <input type="text" id="reg-discord" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200">
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Hasło</label>
-                    <input type="password" id="reg-pass" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200 outline-none focus:border-amber-500">
+                    <input type="password" id="reg-pass" required class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-200">
                 </div>
                 <button type="submit" id="register-btn" class="w-full bg-gray-800 text-white border border-gray-600 font-semibold text-sm px-6 py-3 rounded-lg hover:bg-gray-700 transition mt-2 cursor-pointer">
                     Wyślij wniosek do zarządu
@@ -74,7 +73,6 @@
         </div>
     </div>
 
-    <!-- GŁÓWNA APLIKACJA -->
     <div id="main-app" class="hidden min-h-screen flex">
         <aside class="w-72 bg-[#11141a] border-r border-amber-900/30 flex flex-col justify-between p-6 shrink-0">
             <div>
@@ -91,8 +89,8 @@
                         <img id="side-user-avatar" src="https://i.pravatar.cc/150?img=11" alt="Avatar" class="rounded-full border-2 border-amber-500 object-cover w-full h-full">
                         <div id="side-user-status-dot" class="absolute bottom-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-[#161a23] transition-colors duration-300"></div>
                     </div>
-                    <h2 id="side-user-name" class="font-semibold text-sm">Jan Kowalski</h2>
-                    <p id="side-user-rank" class="text-xs text-amber-500 font-medium mt-1">Pracownik</p>
+                    <h2 id="side-user-name" class="font-semibold text-sm">Ładowanie...</h2>
+                    <p id="side-user-rank" class="text-xs text-amber-500 font-medium mt-1">...</p>
                 </div>
 
                 <nav class="space-y-2" id="sidebar-nav">
@@ -101,7 +99,7 @@
                     <a href="#" data-tab="tab-kasa" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>💰</span> Paragony & Kasa</a>
                     <a href="#" data-tab="tab-magazyn" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>📦</span> Magazyn & Kuchnia</a>
                     <a href="#" data-tab="tab-dokumenty" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition"><span>📄</span> Dokumenty</a>
-                    <a href="#" id="nav-admin" data-tab="tab-admin" class="nav-btn nav-inactive flex items-center gap-3 px-4 py-3 rounded-lg border transition border-red-500/30 text-red-400 bg-red-950/10 mt-6">
+                    <a href="#" id="nav-admin" data-tab="tab-admin" class="nav-btn nav-inactive hidden flex items-center gap-3 px-4 py-3 rounded-lg border transition border-red-500/30 text-red-400 bg-red-950/10 mt-6">
                         <span>👑</span> Zarządzanie Kontami
                     </a>
                 </nav>
@@ -119,12 +117,11 @@
                     <h2 id="page-title" class="text-2xl font-bold tracking-tight">System</h2>
                     <p id="page-subtitle" class="text-sm text-gray-400 mt-1">Zintegrowany panel zarządzania.</p>
                 </div>
-                <div class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs px-3 py-1.5 rounded-full font-medium">Gotowy do pracy</div>
+                <div class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs px-3 py-1.5 rounded-full font-medium">Połączono: Supabase</div>
             </div>
 
             <div class="max-w-5xl space-y-6">
                 
-                <!-- PROFIL -->
                 <div id="tab-panel" class="tab-content block">
                     <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6 flex flex-col md:flex-row items-center gap-8 mb-6">
                         <div class="flex flex-col items-center gap-3 shrink-0">
@@ -139,21 +136,20 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                             <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
                                 <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">Imię i Nazwisko</span>
-                                <span id="user-fullname" class="text-base font-medium">Jan Kowalski</span>
+                                <span id="user-fullname" class="text-base font-medium">...</span>
                             </div>
                             <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
                                 <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">ID Pracownika</span>
-                                <span id="user-badge" class="text-base font-mono text-amber-500">001</span>
+                                <span id="user-badge" class="text-base font-mono text-amber-500">...</span>
                             </div>
                             <div class="bg-[#161a23] p-4 rounded-lg border border-gray-800/60">
                                 <span class="text-xs uppercase text-gray-500 font-semibold block mb-1">Discord</span>
-                                <span id="user-discord" class="text-base text-gray-400">jankowalski#1234</span>
+                                <span id="user-discord" class="text-base text-gray-400">...</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- AKTYWNOŚĆ -->
                 <div id="tab-aktywnosc" class="tab-content hidden space-y-6">
                     <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6">
                         <h3 class="text-lg font-bold text-amber-500 mb-4">⏱️ Rejestracja Czasu Służby</h3>
@@ -192,18 +188,17 @@
                     </div>
                 </div>
 
-                <!-- PARAGONY & KASA -->
                 <div id="tab-kasa" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-[#11141a] border border-gray-800 rounded-xl p-6">
                         <h3 class="text-lg font-bold text-amber-500 mb-4">Wystaw Paragon</h3>
                         <form id="receipt-form" class="space-y-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-400 mb-1">Nick Discord Klienta</label>
-                                <input type="text" id="receipt-discord" required placeholder="np. jasiu_killer" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200 outline-none focus:border-amber-500">
+                                <input type="text" id="receipt-discord" required placeholder="np. jasiu_killer" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-400 mb-1">Wybierz gotowe danie</label>
-                                <select id="receipt-dish-select" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200 focus:border-amber-500 outline-none">
+                                <select id="receipt-dish-select" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-gray-200 focus:border-amber-500">
                                     <option value="">-- Wybierz z menu --</option>
                                     <option value="Burger Klasyczny">Burger Klasyczny</option>
                                     <option value="Taco Meksykańskie">Taco Meksykańskie</option>
@@ -213,11 +208,11 @@
                             </div>
                             <div id="custom-dish-block" class="hidden">
                                 <label class="block text-xs font-semibold text-amber-500 mb-1">Wpisz własną nazwę dania/towaru</label>
-                                <input type="text" id="receipt-custom-products" placeholder="np. Sok Pomarańczowy x3" class="w-full bg-[#161a23] border border-amber-600/50 rounded-lg px-4 py-2 text-sm text-gray-200 outline-none focus:border-amber-500">
+                                <input type="text" id="receipt-custom-products" placeholder="np. Sok Pomarańczowy x3" class="w-full bg-[#161a23] border border-amber-600/50 rounded-lg px-4 py-2 text-sm text-gray-200">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-400 mb-1">Kwota transakcji ($)</label>
-                                <input type="number" id="receipt-amount" required placeholder="15000" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-amber-500 font-mono outline-none focus:border-amber-500">
+                                <input type="number" id="receipt-amount" required placeholder="15000" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-4 py-2 text-sm text-amber-500 font-mono">
                             </div>
                             <button type="submit" id="receipt-btn" class="w-full bg-amber-600 text-black font-semibold text-sm px-4 py-2 rounded-lg hover:bg-amber-500 transition mt-2 cursor-pointer">
                                 Zapisz w księgach
@@ -236,18 +231,17 @@
                     </div>
                 </div>
 
-                <!-- MAGAZYN & KUCHNIA -->
                 <div id="tab-magazyn" class="tab-content hidden space-y-6">
                     <div id="admin-warehouse-panel" class="bg-[#11141a] border border-red-900/40 rounded-xl p-5 mb-6 hidden">
                         <h3 class="text-sm font-bold text-red-400 uppercase tracking-wider mb-3">👑 Panel Zarządu - Zarządzanie Zapasami</h3>
                         <form id="warehouse-add-form" class="flex flex-wrap gap-4 items-end">
                             <div class="flex-1 min-w-[200px]">
                                 <label class="block text-xs text-gray-400 mb-1">Nazwa składnika</label>
-                                <input type="text" id="inv-item-name" required placeholder="np. Mięso, Sałata" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-amber-500">
+                                <input type="text" id="inv-item-name" required placeholder="np. Mięso, Sałata" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-1.5 text-sm">
                             </div>
                             <div class="w-32">
                                 <label class="block text-xs text-gray-400 mb-1">Ilość (+ / -)</label>
-                                <input type="number" id="inv-item-qty" required placeholder="50" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-1.5 text-sm text-amber-500 font-mono outline-none focus:border-amber-500">
+                                <input type="number" id="inv-item-qty" required placeholder="50" class="w-full bg-[#161a23] border border-gray-800 rounded-lg px-3 py-1.5 text-sm text-amber-500 font-mono">
                             </div>
                             <button type="submit" class="bg-red-900/30 text-red-400 border border-red-800 hover:bg-red-800 hover:text-white px-4 py-1.5 rounded-lg text-sm font-medium transition cursor-pointer">
                                 Zaktualizuj stan
@@ -275,21 +269,21 @@
                                         <h4 class="font-bold text-sm text-gray-200">Burger Klasyczny</h4>
                                         <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 1x Mięso<br>• 1x Bułka</p>
                                     </div>
-                                    <button onclick="startCookingMinigame('Burger Klasyczny')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
+                                    <button onclick="startCookingMinigame('Burger')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
                                 </div>
                                 <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
                                     <div>
                                         <h4 class="font-bold text-sm text-gray-200">Taco Meksykańskie</h4>
                                         <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 1x Mięso<br>• 1x Tortilla<br>• 1x Pomidor</p>
                                     </div>
-                                    <button onclick="startCookingMinigame('Taco Meksykańskie')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
+                                    <button onclick="startCookingMinigame('Taco')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
                                 </div>
                                 <div class="bg-[#161a23] p-4 rounded-xl border border-gray-800 flex flex-col justify-between">
                                     <div>
                                         <h4 class="font-bold text-sm text-gray-200">Sałatka Wege</h4>
                                         <p class="text-[11px] text-gray-500 mt-1 mb-3">Potrzebne:<br>• 2x Sałata<br>• 1x Pomidor</p>
                                     </div>
-                                    <button onclick="startCookingMinigame('Sałatka Wege')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
+                                    <button onclick="startCookingMinigame('Salatka')" class="w-full bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold py-1.5 rounded-lg transition cursor-pointer">Rozpocznij przygotowanie</button>
                                 </div>
                             </div>
 
@@ -324,7 +318,6 @@
                     </div>
                 </div>
 
-                <!-- ZARZĄDZANIE KONTAMI -->
                 <div id="tab-admin" class="tab-content hidden">
                     <div class="bg-[#11141a] border border-red-900/50 rounded-xl p-6">
                         <div class="flex justify-between items-center mb-6">
@@ -337,7 +330,6 @@
                     </div>
                 </div>
 
-                <!-- DOKUMENTY -->
                 <div id="tab-dokumenty" class="tab-content hidden">
                     <div class="bg-[#11141a] border border-gray-800 rounded-xl p-10 text-center text-gray-500">Moduł dokumentów w przygotowaniu...</div>
                 </div>

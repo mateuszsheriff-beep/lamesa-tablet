@@ -309,7 +309,7 @@ function setupReceipts() {
     });
 }
 
-// Pobieranie paragonów
+// Pobieranie paragonów - ZMODYFIKOWANE O WYŚWIETLANIE DATY
 window.fetchReceipts = async function() {
     const container = document.getElementById("receipts-list");
     if (!container) return;
@@ -328,15 +328,29 @@ window.fetchReceipts = async function() {
             return;
         }
 
-        container.innerHTML = data.map(item => `
+        container.innerHTML = data.map(item => {
+            // FORMATOWANIE DATY Z SUPABASE
+            let dateString = "Brak daty";
+            if (item.created_at) {
+                const dateObj = new Date(item.created_at);
+                dateString = dateObj.toLocaleDateString('pl-PL') + ' ' + dateObj.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            return `
             <div class="bg-[#11141a] p-3 rounded-lg mb-2 border border-gray-800 text-xs flex justify-between items-center">
                 <div>
-                    <p class="font-bold text-amber-400">${item.products}</p>
+                    <div class="flex items-center gap-2 mb-1">
+                        <p class="font-bold text-amber-400">${item.products}</p>
+                        <span class="text-[10px] bg-gray-800/80 text-gray-300 px-1.5 py-0.5 rounded border border-gray-600">
+                            🕒 ${dateString}
+                        </span>
+                    </div>
                     <p class="text-gray-500">Sprzedawca: ${item.seller_name} | Klient: @${item.client_discord}</p>
                 </div>
                 <div class="font-mono font-bold text-green-400 text-sm">$${item.amount.toLocaleString()}</div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (err) {
         container.innerHTML = `<p class="text-xs text-red-400 p-2">Błąd ładowania: ${err.message}</p>`;
